@@ -12,7 +12,7 @@
 
 import PackageDescription
 
-// Set by scripts/release.sh for each release.
+// Set by scripts/set-binary.sh <version> <checksum> (scripts/release.sh runs it).
 let binaryVersion = "0.1.0"
 let binaryChecksum = "0000000000000000000000000000000000000000000000000000000000000000"
 

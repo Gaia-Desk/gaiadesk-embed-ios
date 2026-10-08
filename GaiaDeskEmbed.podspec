@@ -2,9 +2,12 @@
 # package plus the prebuilt XCFramework. React Native
 # (@gaiadesk/embed-react-native) and Flutter (gaiadesk_embed) depend on it.
 #
-# The XCFramework is not in git: `scripts/fetch-binary.sh <version>` puts a
-# release's in Frameworks/ (the release zip of this repository contains it
-# too, which is what `source` points at).
+# `source` is this repository's GitHub release asset GaiaDeskEmbed-<version>.zip
+# (Sources/, Frameworks/GaiaDeskEmbedFFI.xcframework, the licences), the same
+# release whose GaiaDeskEmbedFFI.xcframework.zip SwiftPM downloads; its SHA-256
+# is written below by scripts/release.sh. The XCFramework is not in git:
+# `scripts/fetch-binary.sh <version>` puts a release's in Frameworks/, which is
+# what `pod lib lint` and `pod 'GaiaDeskEmbed', :path => ...` use.
 Pod::Spec.new do |s|
   s.name = "GaiaDeskEmbed"
   s.version = "0.1.0"
@@ -15,7 +18,10 @@ Pod::Spec.new do |s|
   s.author = { "GaiaDesk" => "noreply@gaiadesk.net" }
   s.platform = :ios, "15.0"
   s.swift_version = "5.9"
-  s.source = { :http => "https://github.com/Gaia-Desk/gaiadesk-embed-ios/releases/download/v#{s.version}/GaiaDeskEmbed-#{s.version}.zip" }
+  s.source = {
+    :http => "https://github.com/Gaia-Desk/gaiadesk-embed-ios/releases/download/v#{s.version}/GaiaDeskEmbed-#{s.version}.zip",
+    :sha256 => "0000000000000000000000000000000000000000000000000000000000000000",
+  }
   s.source_files = "Sources/GaiaDeskEmbed/**/*.swift"
   s.vendored_frameworks = "Frameworks/GaiaDeskEmbedFFI.xcframework"
   s.frameworks = "AVFoundation", "CoreFoundation", "CoreMedia", "CoreVideo", "Foundation", "ReplayKit", "Security", "SystemConfiguration", "UIKit", "VideoToolbox"

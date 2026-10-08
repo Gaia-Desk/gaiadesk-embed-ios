@@ -22,20 +22,49 @@ if you allow it, guide them through it.
 
 ## Install
 
-Swift Package Manager:
+### Swift Package Manager
+
+In Xcode: **File → Add Package Dependencies…**, enter
+`https://github.com/Gaia-Desk/gaiadesk-embed-ios`, and add the `GaiaDeskEmbed` library to your
+app target. Or in a `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/Gaia-Desk/gaiadesk-embed-ios.git", from: "0.1.0"),
-// target:
-.product(name: "GaiaDeskEmbed", package: "gaiadesk-embed-ios"),
+dependencies: [
+    .package(url: "https://github.com/Gaia-Desk/gaiadesk-embed-ios.git", from: "0.1.0"),
+],
+targets: [
+    .target(name: "YourApp", dependencies: [
+        .product(name: "GaiaDeskEmbed", package: "gaiadesk-embed-ios"),
+    ]),
+]
 ```
 
-CocoaPods: `pod 'GaiaDeskEmbed', '~> 0.1'`.
+SwiftPM downloads the native library (`GaiaDeskEmbedFFI.xcframework.zip`) from this repository's
+GitHub release and checks it against the checksum in `Package.swift`; nothing else to set up.
 
-SwiftPM downloads the native library (`GaiaDeskEmbedFFI.xcframework`) from this repository's release
-and checks it against the checksum in `Package.swift`. To build against a local copy
-(`scripts/fetch-binary.sh 0.1.0` puts the release's in `Frameworks/`), set
-`GAIADESK_EMBED_LOCAL_BINARY=1`.
+### CocoaPods
+
+```ruby
+# Podfile
+platform :ios, '15.0'
+
+target 'YourApp' do
+  pod 'GaiaDeskEmbed', '~> 0.1'
+end
+```
+
+then `pod install`. The pod's source is the release's `GaiaDeskEmbed-<version>.zip` (the Swift
+sources and the same XCFramework), verified by its SHA-256 in the podspec. Works with and without
+`use_frameworks!`. React Native (`@gaiadesk/embed-react-native`) and Flutter (`gaiadesk_embed`)
+pull this pod for you.
+
+### A local copy of the library
+
+To build against a local XCFramework instead (`scripts/fetch-binary.sh 0.1.0` puts the release's
+in `Frameworks/`; a GaiaDesk build of the library goes in the same place):
+
+- SwiftPM: set `GAIADESK_EMBED_LOCAL_BINARY=1` in the environment Xcode or `xcodebuild` runs in;
+- CocoaPods: `pod 'GaiaDeskEmbed', :path => '../gaiadesk-embed-ios'`.
 
 ## Quick start
 
@@ -152,6 +181,18 @@ xcodebuild test -scheme GaiaDeskEmbed -destination 'platform=iOS Simulator,name=
 
 Without Xcode's iOS platform installed, `scripts/build-sim.sh --test` builds and runs the same suite
 with swiftc.
+
+## Releasing (maintainers)
+
+```sh
+# 1. In GaiaDesk: scripts/build-embed-ios.sh   → embed/out/ios/GaiaDeskEmbedFFI.xcframework.zip (+ .checksum)
+# 2. Here (checks the zip, runs scripts/set-binary.sh, fills dist/ and the podspec's sha256):
+scripts/release.sh 0.1.0 <gaiadesk checkout>/embed/out/ios/GaiaDeskEmbedFFI.xcframework.zip
+# 3. It prints the rest: commit, tag, `gh release create … dist/*`, `pod trunk push`.
+```
+
+`scripts/set-binary.sh <version> <checksum>` alone repoints `Package.swift` (and the podspec's
+version) at an already-published release.
 
 ## Licence
 

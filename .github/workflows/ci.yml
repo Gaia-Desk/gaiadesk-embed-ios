@@ -1,0 +1,48 @@
+name: ci
+
+# SwiftPM downloads the XCFramework from this repository's release (Package.swift's
+# binaryVersion + binaryChecksum), so this checks exactly what a customer gets:
+# until the first release is published (and after scripts/set-binary.sh points
+# at an unpublished one) the resolve step fails by design.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  swiftpm:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick an iPhone simulator
+        id: sim
+        run: |
+          udid="$(xcrun simctl list devices available -j \
+            | jq -r '[.devices | to_entries[] | select(.key | test("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')"
+          [ -n "$udid" ] && [ "$udid" != null ] || { xcrun simctl list devices available; exit 1; }
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+      - name: Resolve (downloads and checksums the released XCFramework)
+        run: xcodebuild -resolvePackageDependencies -scheme GaiaDeskEmbed
+      - name: Build the package for a device
+        run: xcodebuild build -scheme GaiaDeskEmbed -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO
+      - name: Test in the simulator, hosted in an app (every test runs)
+        run: |
+          xcodebuild test -project Examples/HelpDeskExamples.xcodeproj -scheme GaiaDeskEmbedTests \
+            -destination "id=${{ steps.sim.outputs.udid }}" CODE_SIGNING_ALLOWED=NO
+      - name: Build the examples for the simulator
+        run: |
+          for t in HelpDeskUIKit HelpDeskSwiftUI; do
+            xcodebuild build -project Examples/HelpDeskExamples.xcodeproj -target "$t" \
+              -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+          done
+
+  cocoapods:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the released XCFramework into Frameworks/
+        run: scripts/fetch-binary.sh "$(sed -nE 's/^let binaryVersion = "(.*)"/\1/p' Package.swift)"
+      - name: pod lib lint (local sources + the released binary)
+        run: pod lib lint GaiaDeskEmbed.podspec --allow-warnings --platforms=ios
