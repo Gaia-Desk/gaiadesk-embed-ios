@@ -173,27 +173,28 @@ final class Host {
 
     // MARK: the C table
 
+    static func from(_ p: UnsafeMutableRawPointer?) -> Host { Unmanaged<Host>.fromOpaque(p!).takeUnretainedValue() }
+
     func retainedCallbacks() -> GdMobileHost {
         let ctx = Unmanaged.passRetained(self).toOpaque()
-        func me(_ p: UnsafeMutableRawPointer?) -> Host { Unmanaged<Host>.fromOpaque(p!).takeUnretainedValue() }
         return GdMobileHost(
             ctx: ctx,
             show_indicator: { ctx, title, _, guided in
-                me(ctx).showIndicator(title: title.map { String(cString: $0) } ?? "", guided: guided != 0) ? 1 : 0
+                Host.from(ctx).showIndicator(title: title.map { String(cString: $0) } ?? "", guided: guided != 0) ? 1 : 0
             },
-            indicator_visible: { ctx in me(ctx).visible.get ? 1 : 0 },
-            set_status: { ctx, text in me(ctx).setStatus(text.map { String(cString: $0) } ?? "") },
-            set_indicator_paused: { ctx, p in me(ctx).setPaused(p != 0) },
-            refresh_indicator: { ctx in me(ctx).refreshIndicator() },
-            close_indicator: { ctx in me(ctx).closeIndicator() },
-            start_capture: { ctx, _, fps in me(ctx).startCapture(fps: Int(fps)) ? 1 : 0 },
-            stop_capture: { ctx in me(ctx).stopCapture() },
+            indicator_visible: { ctx in Host.from(ctx).visible.get ? 1 : 0 },
+            set_status: { ctx, text in Host.from(ctx).setStatus(text.map { String(cString: $0) } ?? "") },
+            set_indicator_paused: { ctx, p in Host.from(ctx).setPaused(p != 0) },
+            refresh_indicator: { ctx in Host.from(ctx).refreshIndicator() },
+            close_indicator: { ctx in Host.from(ctx).closeIndicator() },
+            start_capture: { ctx, _, fps in Host.from(ctx).startCapture(fps: Int(fps)) ? 1 : 0 },
+            stop_capture: { ctx in Host.from(ctx).stopCapture() },
             app_frame: { ctx, out in
-                guard let r = me(ctx).appFrame.get, let out else { return 0 }
+                guard let r = Host.from(ctx).appFrame.get, let out else { return 0 }
                 out.pointee = GdRect(x: Double(r.origin.x), y: Double(r.origin.y), w: Double(r.width), h: Double(r.height))
                 return 1
             },
-            deliver: { ctx, json, token in me(ctx).deliver(json.map { String(cString: $0) } ?? "", token: token) },
+            deliver: { ctx, json, token in Host.from(ctx).deliver(json.map { String(cString: $0) } ?? "", token: token) },
             release: { ctx in
                 let h = Unmanaged<Host>.fromOpaque(ctx!)
                 h.takeUnretainedValue().release()
