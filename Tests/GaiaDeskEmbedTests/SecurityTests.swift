@@ -77,8 +77,11 @@ final class SecurityTests: XCTestCase {
         XCTAssertTrue(embed.sentMasks.contains(CGRect(x: 10, y: 100, width: 100, height: 50)))
         v.frame.origin.y = 300 // a scroll, an animation: nothing tells the SDK
         try embed.refreshMasks() // what every captured frame does first
+        XCTAssertTrue(embed.sentMasks.contains(CGRect(x: 10, y: 300, width: 100, height: 50)), "covered where it is set to be at once: \(embed.sentMasks)")
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1)) // committed to the screen
+        try embed.refreshMasks()
         XCTAssertTrue(embed.sentMasks.contains(CGRect(x: 10, y: 300, width: 100, height: 50)), "\(embed.sentMasks)")
-        XCTAssertFalse(embed.sentMasks.contains(CGRect(x: 10, y: 100, width: 100, height: 50)))
+        XCTAssertFalse(embed.sentMasks.contains(CGRect(x: 10, y: 100, width: 100, height: 50)), "the old place is free once it is drawn elsewhere")
     }
 
     // #8: password fields are masked without being asked, and typing into
@@ -339,5 +342,34 @@ final class SecurityTests: XCTestCase {
         embed.setSecretFocus(false)
         XCTAssertNil(Guided.deliver(#"{"t":"type","text":"12"}"#, indicator: nil, masks: [], secretFocus: embed.isSecretFocus))
         XCTAssertEqual(pin.text, "12")
+    }
+
+    // Core 2d002fde: the indicator's edges are reported as they happen, and a
+    // frame is never prepared while it is hidden (not only on the 4 Hz poll).
+    @MainActor
+    func testFramesStopTheMomentTheIndicatorIsHidden() throws {
+        let embed = try session()
+        defer { embed.stop() }
+        // The session's own host: the library shows its indicator while the
+        // session waits (or we do, if it has not yet).
+        let host = embed.host
+        let end = Date().addingTimeInterval(5)
+        while host.indicatorWindow == nil && Date() < end { RunLoop.main.run(until: Date().addingTimeInterval(0.1)) }
+        if host.indicatorWindow == nil {
+            _ = host.showIndicator(title: "Sharing with Acme", guided: false)
+            RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        }
+        let w = try XCTUnwrap(host.indicatorWindow)
+        w.layoutIfNeeded()
+        XCTAssertNotNil(host.prepareFrame())
+        XCTAssertTrue(host.visible.get)
+        let pill = try XCTUnwrap(w.rootViewController?.view.subviews.first { $0.accessibilityIdentifier == "gaiadesk.indicator" })
+        let cover = UIView(frame: pill.convert(pill.bounds, to: w.rootViewController!.view))
+        w.rootViewController!.view.addSubview(cover)
+        XCTAssertNil(host.prepareFrame(), "covered: no frame, right away")
+        XCTAssertFalse(host.visible.get, "and the library was told")
+        cover.removeFromSuperview()
+        XCTAssertNotNil(host.prepareFrame())
+        XCTAssertTrue(host.visible.get)
     }
 }

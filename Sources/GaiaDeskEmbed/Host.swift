@@ -83,6 +83,7 @@ final class Host {
         DispatchQueue.main.async { [self] in
             watch?.invalidate()
             watch = nil
+            if visible.get { embed?.withHandle { h in _ = gd_embed_indicator_changed(h, 0) } }
             visible.set(false)
             indicator?.close()
             indicator = nil
@@ -149,6 +150,10 @@ final class Host {
     @MainActor
     func prepareFrame() -> [CGRect]? {
         guard let embed else { return nil }
+        // The indicator checked with every frame too, and its edges told to
+        // the library as they happen: a frame from while it was hidden is
+        // never sent.
+        if indicator != nil, !checkIndicator() { return nil }
         let scan = Host.scan(excluding: indicator?.window)
         held(scan.outOfProcess)
         if scan.outOfProcess { return nil }
@@ -159,6 +164,19 @@ final class Host {
             return nil // masks fail closed: no frame the library could not mask
         }
         return embed.sentMasks
+    }
+
+    /// Main thread: recompute the indicator's visibility; report a change to
+    /// the library at once. Returns it.
+    @discardableResult
+    @MainActor
+    func checkIndicator() -> Bool {
+        let now = indicator?.isVisible() ?? false
+        if now != visible.get {
+            visible.set(now)
+            embed?.withHandle { h in _ = gd_embed_indicator_changed(h, now ? 1 : 0) }
+        }
+        return now
     }
 
     /// Main thread: whether frames are held for out-of-process UI.
@@ -200,7 +218,7 @@ final class Host {
     }
 
     private func observe() {
-        visible.set(indicator?.isVisible() ?? false)
+        MainActor.assumeIsolated { _ = checkIndicator() }
         appFrame.set(Host.keyWindow(excluding: indicator?.window).map { $0.convert($0.bounds, to: $0.screen.coordinateSpace) })
     }
 

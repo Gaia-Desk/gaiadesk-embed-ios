@@ -92,7 +92,7 @@ public final class GaiaDeskEmbed {
 
     private let lock = NSLock()
     private var handle: OpaquePointer?
-    private let host: Host
+    let host: Host
 
     /// Start sharing. `consent` is your user's YES to a consent dialog:
     /// `requestConsent` (the SDK's), or `recordConsent` after your own. It is
@@ -274,7 +274,12 @@ public final class GaiaDeskEmbed {
         var moving = false
         for v in views {
             if Host.isAnimating(v) { moving = true }
-            if let r = Host.presentedRect(v) { rects.append(r) }
+            // Both where it is drawn and where it is set to be (a change not
+            // yet committed to the screen): whichever the next frame shows.
+            let drawn = Host.presentedRect(v)
+            let model = GaiaDeskEmbed.rectInWindow(v)
+            if let drawn { rects.append(drawn) }
+            if let model, model != drawn { rects.append(model) }
         }
         if moving { rects.append(Host.everything) }
         return rects
