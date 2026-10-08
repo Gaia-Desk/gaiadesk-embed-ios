@@ -26,4 +26,9 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = "Frameworks/GaiaDeskEmbedFFI.xcframework"
   s.frameworks = "AVFoundation", "CoreFoundation", "CoreMedia", "CoreVideo", "Foundation", "ReplayKit", "Security", "SystemConfiguration", "UIKit", "VideoToolbox"
   s.libraries = "c++", "resolv"
+  # The C module (GaiaDeskEmbedFFI) comes from the XCFramework's headers,
+  # which CocoaPods copies in a script phase; when the pod is a framework
+  # (use_frameworks!, e.g. Flutter) Xcode 26's explicit-module scan runs
+  # before that phase and cannot find the module. Implicit modules here.
+  s.pod_target_xcconfig = { "SWIFT_ENABLE_EXPLICIT_MODULES" => "NO" }
 end
