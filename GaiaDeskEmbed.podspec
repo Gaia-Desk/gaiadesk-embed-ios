@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.swift_version = "5.9"
   s.source = {
     :http => "https://github.com/Gaia-Desk/gaiadesk-embed-ios/releases/download/v#{s.version}/GaiaDeskEmbed-#{s.version}.zip",
-    :sha256 => "3babe8b877baa70e6f6ea1fa6c1dbe49d6cdbd1fcb82ad987147b64e7db1f6c0",
+    :sha256 => "0eabed77526dcda6fc0364f4f9179a7efa5183509847607793702c26494c1d3a",
   }
   s.source_files = "Sources/GaiaDeskEmbed/**/*.swift"
   s.vendored_frameworks = "Frameworks/GaiaDeskEmbedFFI.xcframework"
