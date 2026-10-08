@@ -164,7 +164,7 @@ public final class GaiaDeskEmbed {
 
     /// Pause (or resume) guided input, as the indicator's own button does.
     public func setPaused(_ paused: Bool) {
-        try? withHandle { h in _ = gd_embed_set_paused(h, paused ? 1 : 0) }
+        withHandle { h in _ = gd_embed_set_paused(h, paused ? 1 : 0) }
     }
 
     /// A view's frame in its window's coordinates, in points: the space mask

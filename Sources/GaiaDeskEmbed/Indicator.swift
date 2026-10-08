@@ -42,7 +42,7 @@ final class Indicator: NSObject {
     }
 
     var paused = false {
-        didSet { pauseButton.setTitle(paused ? "Allow control" : "Pause control", for: .normal) }
+        didSet { pauseButton.configuration?.title = paused ? "Allow control" : "Pause control" }
     }
 
     init(title: String, guided: Bool) {
@@ -88,12 +88,18 @@ final class Indicator: NSObject {
         dot.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([dot.widthAnchor.constraint(equalToConstant: 8), dot.heightAnchor.constraint(equalToConstant: 8)])
         for (b, t, id) in [(stopButton, "Stop", "gaiadesk.indicator.stop"), (pauseButton, "Pause control", "gaiadesk.indicator.pause")] {
-            b.setTitle(t, for: .normal)
-            b.setTitleColor(.white, for: .normal)
-            b.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
-            b.backgroundColor = UIColor.white.withAlphaComponent(0.22)
-            b.layer.cornerRadius = 12
-            b.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+            var c = UIButton.Configuration.plain()
+            c.title = t
+            c.baseForegroundColor = .white
+            c.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
+            c.background.backgroundColor = UIColor.white.withAlphaComponent(0.22)
+            c.background.cornerRadius = 12
+            c.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { a in
+                var a = a
+                a.font = .systemFont(ofSize: 13, weight: .bold)
+                return a
+            }
+            b.configuration = c
             b.accessibilityIdentifier = id
         }
         stopButton.addTarget(self, action: #selector(stopTapped), for: .touchUpInside)
