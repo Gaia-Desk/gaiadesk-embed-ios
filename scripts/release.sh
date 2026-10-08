@@ -43,8 +43,8 @@ ids="$(plutil -extract AvailableLibraries json -o - "$PLIST" | /usr/bin/python3 
 case " $ids " in *" ios-arm64 "*) ;; *) fail "no ios-arm64 (device) slice: $ids" ;; esac
 case "$ids" in *ios-arm64_x86_64-simulator*) ;; *) fail "no ios-arm64_x86_64-simulator slice (a --sim-only build?): $ids" ;; esac
 while IFS= read -r lib; do
-  if strings -a "$lib" | grep -q "NOT-FOR-RELEASE"; then fail "$lib is a test-source build"; fi
-  if strings -a "$lib" | grep -qF "$HOME"; then fail "$lib carries $HOME (a --debug build?)"; fi
+  if strings -a "$lib" | grep "NOT-FOR-RELEASE" >/dev/null; then fail "$lib is a test-source build"; fi
+  if strings -a "$lib" | grep -F "$HOME" >/dev/null; then fail "$lib carries $HOME (a --debug build?)"; fi
 done < <(find "$XCF" -name '*.a')
 [ -f "$XCF/LICENSE-BINARY" ] || fail "the XCFramework carries no LICENSE-BINARY"
 
