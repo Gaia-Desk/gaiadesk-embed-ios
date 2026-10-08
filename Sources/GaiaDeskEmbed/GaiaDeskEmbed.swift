@@ -21,6 +21,12 @@ public struct GaiaDeskEmbedError: Error, Equatable, CustomStringConvertible {
     public let code: String
     public let message: String
     public var description: String { "\(code): \(message)" }
+
+    /// Wrappers (React Native, Flutter) report their own refusals the same way.
+    public init(code: String, message: String) {
+        self.code = code
+        self.message = message
+    }
 }
 
 public final class GaiaDeskEmbed {
