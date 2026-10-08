@@ -13,6 +13,7 @@
 //   GAIADESK_DEMO_TEST_CONSENT=1              answer the consent dialog "Share" (tests only)
 //   GAIADESK_DEMO_GUIDED=1                    allow guided input
 //   GAIADESK_DEMO_CAPTURE=snapshot            capture by snapshot (the Simulator has no ReplayKit)
+//   GAIADESK_DEMO_CMD=1                       run stop|pause|resume written to <app tmp>/gaiadesk-demo-cmd
 // URLs: helpdeskuikit://stop, helpdeskuikit://pause, helpdeskuikit://resume.
 // Every event is printed to stdout as one JSON line.
 
@@ -37,18 +38,40 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         w.rootViewController = DeskViewController()
         w.makeKeyAndVisible()
         window = w
+        watchDemoCommands()
         return true
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        guard let help = GaiaDeskEmbed.current else { return false }
-        switch url.host {
-        case "stop": help.stop()
-        case "pause": help.setPaused(true)
-        case "resume": help.setPaused(false)
-        default: return false
-        }
-        return true
+        demoCommand(url.host ?? "")
+    }
+}
+
+/// stop | pause | resume, for the running session.
+@MainActor @discardableResult
+func demoCommand(_ what: String) -> Bool {
+    guard let help = GaiaDeskEmbed.current else { return false }
+    switch what {
+    case "stop": help.stop()
+    case "pause": help.setPaused(true)
+    case "resume": help.setPaused(false)
+    default: return false
+    }
+    emit(["type": "demo_cmd", "cmd": what])
+    return true
+}
+
+/// Tests (GAIADESK_DEMO_CMD=1): a command written to <tmp>/gaiadesk-demo-cmd
+/// is run and the file removed (the Simulator asks before opening a URL).
+@MainActor
+func watchDemoCommands() {
+    guard env["GAIADESK_DEMO_CMD"] == "1" else { return }
+    let file = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("gaiadesk-demo-cmd")
+    try? FileManager.default.removeItem(at: file)
+    Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { _ in
+        guard let cmd = try? String(contentsOf: file, encoding: .utf8) else { return }
+        try? FileManager.default.removeItem(at: file)
+        Task { @MainActor in demoCommand(cmd.trimmingCharacters(in: .whitespacesAndNewlines)) }
     }
 }
 

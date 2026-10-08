@@ -8,7 +8,7 @@
 //
 // Test hooks: the same environment as HelpDeskUIKit (GAIADESK_EMBED_TOKEN,
 // GAIADESK_SERVER, GAIADESK_DEMO_AUTOSTART, GAIADESK_DEMO_TEST_CONSENT,
-// GAIADESK_DEMO_GUIDED, GAIADESK_DEMO_CAPTURE=snapshot) and URLs
+// GAIADESK_DEMO_GUIDED, GAIADESK_DEMO_CAPTURE=snapshot, GAIADESK_DEMO_CMD) and URLs
 // helpdeskswiftui://stop|pause|resume. Events are printed as JSON lines.
 
 import GaiaDeskEmbed
@@ -32,6 +32,7 @@ struct HelpDeskApp: App {
             DeskView()
                 .environmentObject(model)
                 .onOpenURL { url in model.control(url.host ?? "") }
+                .onAppear { model.watchCommands() }
         }
     }
 }
@@ -63,7 +64,24 @@ final class HelpModel: ObservableObject {
         case "stop": help?.stop()
         case "pause": help?.setPaused(true)
         case "resume": help?.setPaused(false)
-        default: break
+        default: return
+        }
+        emit(["type": "demo_cmd", "cmd": what])
+    }
+
+    private var watching = false
+
+    /// Tests (GAIADESK_DEMO_CMD=1): a command written to <tmp>/gaiadesk-demo-cmd
+    /// is run and the file removed (the Simulator asks before opening a URL).
+    func watchCommands() {
+        guard env["GAIADESK_DEMO_CMD"] == "1", !watching else { return }
+        watching = true
+        let file = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("gaiadesk-demo-cmd")
+        try? FileManager.default.removeItem(at: file)
+        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+            guard let cmd = try? String(contentsOf: file, encoding: .utf8) else { return }
+            try? FileManager.default.removeItem(at: file)
+            Task { @MainActor in self?.control(cmd.trimmingCharacters(in: .whitespacesAndNewlines)) }
         }
     }
 
