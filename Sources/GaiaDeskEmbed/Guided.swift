@@ -25,7 +25,7 @@ enum Guided {
     /// Deliver one request; nil when applied, else why not. `masks`: what is
     /// masked now (window points).
     @MainActor
-    static func deliver(_ json: String, indicator: Indicator?, masks: [CGRect]) -> String? {
+    static func deliver(_ json: String, indicator: Indicator?, masks: [CGRect], secretFocus: Bool = false) -> String? {
         guard let d = json.data(using: .utf8), let o = try? JSONSerialization.jsonObject(with: d) as? [String: Any], let t = o["t"] as? String else { return "unsupported" }
         guard UIApplication.shared.applicationState == .active, let window = Host.keyWindow(excluding: indicator?.window) else { return "not_focused" }
         let point = CGPoint(x: o["x"] as? Double ?? 0, y: o["y"] as? Double ?? 0)
@@ -46,11 +46,13 @@ enum Guided {
             if indicator?.onPill(point) == true { return "embed_ui" }
             return scroll(at: p, in: window, dx: o["dx"] as? Double ?? 0, dy: o["dy"] as? Double ?? 0) ? nil : "nothing_there"
         case "type":
+            if secretFocus { return "masked" }
             if let r = firstResponder(), let why = refusesTyping(r, masks: masks) { return why }
             guard let text = o["text"] as? String, let input = firstResponder() as? UIKeyInput else { return "not_editable" }
             input.insertText(text)
             return nil
         case "key":
+            if secretFocus { return "masked" }
             if let r = firstResponder(), let why = refusesTyping(r, masks: masks) { return why }
             return key(o["key"] as? String ?? "")
         default:

@@ -91,15 +91,42 @@ final class SnapshotCapture: Capture {
 }
 
 /// ReplayKit's in-app capture, scaled and converted to BGRA off the main thread.
-final class ReplayKitCapture: Capture {
+final class ReplayKitCapture: NSObject, Capture {
     private weak var host: Host?
     private let ci = CIContext(options: [.cacheIntermediates: false])
     private let interval = Locked(1.0 / 15)
     private var last: CFTimeInterval = 0
     private var buffer: CVPixelBuffer?
     private var running = false
+    /// What a frame needs from the main thread (masks or nil: no frame,
+    /// interface orientation, screen size), measured there by `ticker` and
+    /// read by ReplayKit's queue without ever waiting on the main thread (a
+    /// main thread stopping the capture must not deadlock with a frame).
+    struct FrameState {
+        var masks: [CGRect]?
+        var interface: UIInterfaceOrientation
+        var screen: CGSize
+    }
+    private let state = Locked<FrameState?>(nil)
+    private var ticker: CADisplayLink?
 
-    init(host: Host) { self.host = host }
+    init(host: Host) {
+        self.host = host
+        super.init()
+    }
+
+    /// Main thread: measure what the next frame needs.
+    @MainActor
+    func refreshState() {
+        let scene = Indicator.scene()
+        state.set(FrameState(masks: host?.prepareFrame(), interface: scene?.interfaceOrientation ?? .portrait, screen: scene?.screen.bounds.size ?? UIScreen.main.bounds.size))
+    }
+
+    /// Any thread, never blocking on the main thread: the latest state (nil
+    /// before the first measurement: no frame).
+    func frameState() -> FrameState? { state.get }
+
+    @objc private func tick() { MainActor.assumeIsolated { refreshState() } }
 
     func start(fps: Int, done: @escaping (Bool) -> Void) {
         let rec = RPScreenRecorder.shared()
@@ -107,6 +134,14 @@ final class ReplayKitCapture: Capture {
         guard rec.isAvailable else { return done(false) }
         rec.isMicrophoneEnabled = false
         running = true
+        // Masks are measured on the main thread at twice the frame rate (and
+        // fail closed while anything masked moves), so a frame's masks are at
+        // most half a frame old.
+        let link = CADisplayLink(target: self, selector: #selector(tick))
+        link.preferredFramesPerSecond = min(60, 2 * max(1, min(30, fps)))
+        link.add(to: .main, forMode: .common)
+        ticker = link
+        MainActor.assumeIsolated { refreshState() }
         rec.startCapture(handler: { [weak self] sample, type, error in
             guard type == .video, error == nil else { return }
             self?.frame(sample)
@@ -118,6 +153,9 @@ final class ReplayKitCapture: Capture {
     func stop() {
         guard running else { return }
         running = false
+        ticker?.invalidate()
+        ticker = nil
+        state.set(nil)
         RPScreenRecorder.shared().stopCapture { _ in }
     }
 
@@ -126,14 +164,10 @@ final class ReplayKitCapture: Capture {
         let now = CACurrentMediaTime()
         guard now - last >= interval.get * 0.9, let px = CMSampleBufferGetImageBuffer(sample), let host else { return }
         last = now
-        // On the main thread, for this frame: the masks measured now, whether
-        // a frame may go at all, and the app's interface orientation and
-        // screen size.
-        let main = DispatchQueue.main.sync { () -> ([CGRect]?, UIInterfaceOrientation, CGSize) in
-            let scene = Indicator.scene()
-            return (MainActor.assumeIsolated { host.prepareFrame() }, scene?.interfaceOrientation ?? .portrait, scene?.screen.bounds.size ?? UIScreen.main.bounds.size)
-        }
-        guard let masks = main.0 else { return }
+        // What the main thread measured last (masks, whether a frame may go,
+        // orientation, screen): no hop to the main thread here.
+        guard let st = frameState(), let masks = st.masks else { return }
+        let main = (masks, st.interface, st.screen)
         let attached = (CMGetAttachment(sample, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil) as? NSNumber).flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) }
         let buffer0 = CGSize(width: CVPixelBufferGetWidth(px), height: CVPixelBufferGetHeight(px))
         var img = CIImage(cvPixelBuffer: px).oriented(Self.orientation(attached: attached, buffer: buffer0, interface: main.1))

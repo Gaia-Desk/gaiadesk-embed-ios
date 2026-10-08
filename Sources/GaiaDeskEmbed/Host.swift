@@ -115,7 +115,7 @@ final class Host {
 
     func deliver(_ json: String, token: UInt64) {
         DispatchQueue.main.async { [self] in
-            let reason = MainActor.assumeIsolated { Guided.deliver(json, indicator: indicator, masks: embed?.currentMasks() ?? []) }
+            let reason = MainActor.assumeIsolated { Guided.deliver(json, indicator: indicator, masks: embed?.currentMasks() ?? [], secretFocus: embed?.isSecretFocus ?? false) }
             if token != 0 {
                 embed?.withHandle { h in _ = gd_embed_action_result(h, token, reason) }
             }
@@ -208,9 +208,10 @@ final class Host {
     /// thread): every secure text field's rect (window coordinates, masked
     /// automatically) and whether out-of-process UI is presented.
     @MainActor
-    static func scan(excluding: UIWindow?) -> (secure: [CGRect], outOfProcess: Bool) {
-        guard let scene = Indicator.scene() else { return ([], false) }
+    static func scan(excluding: UIWindow?) -> (secure: [CGRect], secureViews: [UIView], outOfProcess: Bool) {
+        guard let scene = Indicator.scene() else { return ([], [], false) }
         var secure: [CGRect] = []
+        var secureViews: [UIView] = []
         var remote = false
         for w in scene.windows where w !== excluding && !(w is IndicatorWindow) && !w.isHidden {
             if isSystemInputWindow(w) { continue }
@@ -221,13 +222,40 @@ final class Host {
             }
             walk(w) { v in
                 if v.isHidden || v.alpha < 0.01 { return false }
-                if let t = v as? UITextField, t.isSecureTextEntry { secure.append(v.convert(v.bounds, to: nil)) }
-                else if let t = v as? UITextView, t.isSecureTextEntry { secure.append(v.convert(v.bounds, to: nil)) }
+                if (v as? UITextField)?.isSecureTextEntry == true || (v as? UITextView)?.isSecureTextEntry == true {
+                    secure.append(v.convert(v.bounds, to: nil))
+                    secureViews.append(v)
+                }
                 if NSStringFromClass(type(of: v)) == "_UIRemoteView" { remote = true }
                 return true
             }
         }
-        return (secure, remote)
+        return (secure, secureViews, remote)
+    }
+
+    /// A mask covering any window: painted while masked views move.
+    static let everything = CGRect(x: -100_000, y: -100_000, width: 300_000, height: 300_000)
+
+    /// Where `v` is on screen now, in its window's points: from the
+    /// presentation layers (what is being drawn mid-animation), not the
+    /// model frames (where an animation will END). Nil when not in a window.
+    static func presentedRect(_ v: UIView) -> CGRect? {
+        guard let w = v.window else { return nil }
+        if let pl = v.layer.presentation(), let wl = w.layer.presentation() {
+            return pl.convert(pl.bounds, to: wl)
+        }
+        return v.convert(v.bounds, to: nil)
+    }
+
+    /// Whether `v` or any view holding it (up to its window) has a running
+    /// animation.
+    static func isAnimating(_ v: UIView) -> Bool {
+        var cur: UIView? = v
+        while let x = cur {
+            if let keys = x.layer.animationKeys(), !keys.isEmpty { return true }
+            cur = x.superview
+        }
+        return false
     }
 
     /// View controllers whose content another process draws.

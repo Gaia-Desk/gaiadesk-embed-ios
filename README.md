@@ -151,7 +151,7 @@ is partial**, because iOS has no public way to synthesise a touch:
 | clicks a table/collection cell | it is selected through your delegate |
 | clicks anything else (SwiftUI views, custom gestures, web content) | your customer sees a **"Tap here"** ring at that spot; the agent is told `hint_shown` |
 | scrolls | the `UIScrollView` under the point scrolls |
-| types / presses Enter, Backspace, arrows, Home, End, Escape | delivered to the first responder (refused, `masked`, for a password field or anything masked) |
+| types / presses Enter, Backspace, arrows, Home, End, Escape | delivered to the first responder (refused, `masked`, for a password field, anything masked, or while you said `setSecretFocus(true)`) |
 | moves the pointer / highlights | a pointer dot / ring is drawn over your app |
 
 A click on the indicator, or on a masked region, or while your app is not active is refused. The

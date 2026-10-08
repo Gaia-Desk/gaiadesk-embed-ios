@@ -196,6 +196,23 @@ public final class GaiaDeskEmbed {
         sendPaused(paused)
     }
 
+    /// Focus entered (true) or left (false) a secret field the SDK cannot
+    /// recognise itself: a wrapper's (React Native, Flutter) or your own
+    /// custom one. While true, guided typing and keys are refused (`masked`).
+    /// Native `isSecureTextEntry` fields are refused without it.
+    public func setSecretFocus(_ secret: Bool) {
+        lock.lock()
+        secretFocus = secret
+        lock.unlock()
+    }
+
+    /// Whether focus is in a secret field (`setSecretFocus`).
+    var isSecretFocus: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return secretFocus
+    }
+
     /// The indicator's Pause / Allow control button: the customer's own
     /// pause, which only they can lift (the library holds it too).
     func customerSetPaused(_ paused: Bool) {
@@ -230,6 +247,8 @@ public final class GaiaDeskEmbed {
     private var maskedViews: [WeakView] = []
     /// What the library was last told to mask (main thread).
     private(set) var sentMasks: [CGRect] = []
+    /// Focus is in a secret field, by the app's word (under `lock`).
+    private var secretFocus = false
     /// The customer paused guided input on the indicator (under `lock`).
     private var customerPaused = false
     /// The last pause state sent to the library (under `lock`; tests).
@@ -245,7 +264,20 @@ public final class GaiaDeskEmbed {
     /// secure text field on screen.
     @MainActor
     func currentMasks() -> [CGRect] {
-        appRects + maskedViews.compactMap { $0.view.flatMap(GaiaDeskEmbed.rectInWindow) } + MaskRegistry.shared.rects + Host.scan(excluding: host.indicatorWindow).secure
+        // Where the views are ON SCREEN now (their presentation layers, which
+        // an animation moves long before the model frame gets there), and
+        // everything while any of them, or anything holding them, is still
+        // animating (a navigation push, the keyboard, UIView.animate): a
+        // moving view is never trusted to be where it was measured.
+        let views = maskedViews.compactMap(\.view) + Host.scan(excluding: host.indicatorWindow).secureViews
+        var rects = appRects + MaskRegistry.shared.rects
+        var moving = false
+        for v in views {
+            if Host.isAnimating(v) { moving = true }
+            if let r = Host.presentedRect(v) { rects.append(r) }
+        }
+        if moving { rects.append(Host.everything) }
+        return rects
     }
 
     /// Measure the masks again and tell the library when they moved. Called

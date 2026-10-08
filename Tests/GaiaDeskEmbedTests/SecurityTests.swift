@@ -124,7 +124,7 @@ final class SecurityTests: XCTestCase {
         let root = try XCTUnwrap(Host.keyWindow(excluding: nil)?.rootViewController)
         let picker = PHPickerViewController(configuration: PHPickerConfiguration())
         root.present(picker, animated: false)
-        let end = Date().addingTimeInterval(3)
+        let end = Date().addingTimeInterval(10) // the photo picker's service starts slowly on a fresh simulator
         while root.presentedViewController !== picker && Date() < end { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
         XCTAssertTrue(root.presentedViewController === picker, "presented: \(String(describing: root.presentedViewController))")
         XCTAssertTrue(Host.scan(excluding: nil).outOfProcess, "a presented photo picker blocks frames")
@@ -255,5 +255,89 @@ final class SecurityTests: XCTestCase {
         XCTAssertEqual(embed.pausedSent, true, "the app may still pause")
         embed.setPaused(false)
         XCTAssertEqual(embed.pausedSent, false, "and resume its own pause")
+    }
+
+    // Re-review C: an animating masked view is measured where it is drawn
+    // (its presentation layer), not where the animation will end, and the
+    // picture is masked whole while it, or anything holding it, moves.
+    @MainActor
+    func testAnimatingMasksFollowThePresentationAndBlackOut() throws {
+        let w = try window()
+        defer { w.isHidden = true }
+        let holder = UIView(frame: w.bounds)
+        w.rootViewController!.view.addSubview(holder)
+        let card = UIView(frame: CGRect(x: 20, y: 100, width: 200, height: 50))
+        holder.addSubview(card)
+        let embed = try session()
+        defer { embed.stop() }
+        try embed.setMaskedViews([card])
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1)) // committed: a presentation layer exists
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything), "at rest: just the card")
+        XCTAssertTrue(embed.currentMasks().contains(CGRect(x: 20, y: 100, width: 200, height: 50)))
+
+        // The card slides down over 10 s (UIView.animate): the model frame
+        // jumps to the end at once, the drawn card is still near the top.
+        UIView.animate(withDuration: 10, delay: 0, options: [.curveLinear]) { card.frame.origin.y = 500 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertEqual(card.convert(card.bounds, to: nil).minY, 500, "the model frame is the END of the animation")
+        let drawn = try XCTUnwrap(Host.presentedRect(card))
+        XCTAssertLessThan(drawn.minY, 200, "measured where it is drawn: \(drawn)")
+        let masks = embed.currentMasks()
+        XCTAssertTrue(masks.contains(Host.everything), "everything masked while it moves")
+        XCTAssertTrue(masks.contains { abs($0.minY - drawn.minY) < 30 && $0.width == 200 }, "and the drawn card: \(masks)")
+        card.layer.removeAllAnimations()
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything))
+
+        // An ancestor moving (a navigation push, a sheet) counts too.
+        UIView.animate(withDuration: 10) { holder.frame.origin.x = -300 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertTrue(embed.currentMasks().contains(Host.everything), "a moving ancestor masks everything")
+        holder.layer.removeAllAnimations()
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything))
+    }
+
+    // Re-review (low): ReplayKit's frames never wait on the main thread, so a
+    // main thread that is stopping the capture (and waiting for ReplayKit's
+    // queue) cannot deadlock with a frame.
+    @MainActor
+    func testReplayKitFramesNeverWaitOnTheMainThread() throws {
+        let host = Host(company: "Acme", method: .replayKit)
+        let embed = try session()
+        defer { embed.stop() }
+        host.attach(embed)
+        let cap = ReplayKitCapture(host: host)
+        cap.refreshState()
+        let done = DispatchSemaphore(value: 0)
+        let got = Locked(false)
+        DispatchQueue.global().async {
+            got.set(cap.frameState()?.masks != nil)
+            done.signal()
+        }
+        // The main thread is blocked here, as in a stop waiting on ReplayKit.
+        XCTAssertEqual(done.wait(timeout: .now() + 2), .success, "a frame's state was read without the main thread")
+        XCTAssertTrue(got.get)
+    }
+
+    // setSecretFocus: a wrapper's secret field (not a native secure one):
+    // typing and keys are refused while the app says focus is in it.
+    @MainActor
+    func testSecretFocusRefusesTyping() throws {
+        let w = try window()
+        w.makeKey()
+        defer { w.isHidden = true }
+        let pin = UITextField(frame: CGRect(x: 20, y: 300, width: 300, height: 40)) // not isSecureTextEntry
+        w.rootViewController!.view.addSubview(pin)
+        guard pin.becomeFirstResponder() else { throw XCTSkip("no first responder in this host") }
+        defer { pin.resignFirstResponder() }
+        let embed = try session()
+        defer { embed.stop() }
+        embed.setSecretFocus(true)
+        XCTAssertTrue(embed.isSecretFocus)
+        XCTAssertEqual(Guided.deliver(#"{"t":"type","text":"1234"}"#, indicator: nil, masks: [], secretFocus: embed.isSecretFocus), "masked")
+        XCTAssertEqual(Guided.deliver(#"{"t":"key","key":"Backspace"}"#, indicator: nil, masks: [], secretFocus: embed.isSecretFocus), "masked")
+        XCTAssertEqual(pin.text ?? "", "")
+        embed.setSecretFocus(false)
+        XCTAssertNil(Guided.deliver(#"{"t":"type","text":"12"}"#, indicator: nil, masks: [], secretFocus: embed.isSecretFocus))
+        XCTAssertEqual(pin.text, "12")
     }
 }
