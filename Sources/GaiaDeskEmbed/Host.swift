@@ -265,6 +265,34 @@ final class Host {
         return v.convert(v.bounds, to: nil)
     }
 
+    /// Whether `w` is mid-transition: a view controller transition under way
+    /// (`transitionCoordinator`), or any layer of the window moving
+    /// (a geometry animation: position, bounds, transform). Spinners and
+    /// fades do not count. Stops at the first one found.
+    @MainActor
+    static func inTransition(_ w: UIWindow?) -> Bool {
+        guard let w else { return false }
+        var vc = w.rootViewController
+        while let v = vc {
+            if v.transitionCoordinator != nil { return true }
+            vc = v.presentedViewController
+        }
+        return movingLayer(w.layer, depth: 0)
+    }
+
+    private static let geometryKeys = ["position", "bounds", "transform", "frame", "anchorPoint"]
+
+    private static func movingLayer(_ l: CALayer, depth: Int) -> Bool {
+        if let keys = l.animationKeys(), keys.contains(where: { k in
+            geometryKeys.contains { k.hasPrefix($0) } && !k.hasPrefix("transform.rotation")
+        }) { return true }
+        guard depth < 64 else { return false }
+        for s in l.sublayers ?? [] where !s.isHidden {
+            if movingLayer(s, depth: depth + 1) { return true }
+        }
+        return false
+    }
+
     /// Whether `v` or any view holding it (up to its window) has a running
     /// animation.
     static func isAnimating(_ v: UIView) -> Bool {

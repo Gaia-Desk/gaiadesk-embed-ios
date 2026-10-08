@@ -372,4 +372,47 @@ final class SecurityTests: XCTestCase {
         XCTAssertNotNil(host.prepareFrame())
         XCTAssertTrue(host.visible.get)
     }
+
+    // Final check: SwiftUI marks and app rects are layout positions; while the
+    // app's window is mid-transition everything is masked (if anything is).
+    @MainActor
+    func testATransitionInTheKeyWindowMasksEverything() throws {
+        _ = try scene()
+        let w = try XCTUnwrap(Host.keyWindow(excluding: nil))
+        let oldRoot = w.rootViewController
+        let embed = try session()
+        defer {
+            embed.stop()
+            w.rootViewController = oldRoot
+        }
+        let nav = UINavigationController(rootViewController: UIViewController())
+        w.rootViewController = nav
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything), "no masks: nothing to black out")
+        try embed.setMaskedRects([CGRect(x: 20, y: 130, width: 220, height: 120)]) // e.g. a .gaiaDeskMasked() card
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything), "at rest")
+
+        nav.pushViewController(UIViewController(), animated: true) // a NavigationStack push
+        XCTAssertNotNil(nav.transitionCoordinator)
+        XCTAssertTrue(embed.currentMasks().contains(Host.everything), "mid-push: everything masked")
+        let end = Date().addingTimeInterval(3)
+        while nav.transitionCoordinator != nil && Date() < end { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything), "settled")
+
+        // Content moving with no view controller transition (the keyboard
+        // pushing a SwiftUI view up): a geometry animation in the window.
+        let moving = UIView(frame: CGRect(x: 0, y: 400, width: 100, height: 100))
+        nav.topViewController!.view.addSubview(moving)
+        UIView.animate(withDuration: 10) { moving.frame.origin.y = 200 }
+        XCTAssertTrue(embed.currentMasks().contains(Host.everything), "a moving layer: everything masked")
+        moving.layer.removeAllAnimations()
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything))
+        // A spinner is not a transition.
+        let spinner = UIActivityIndicatorView(style: .medium)
+        nav.topViewController!.view.addSubview(spinner)
+        spinner.startAnimating()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertFalse(embed.currentMasks().contains(Host.everything), "a spinning spinner does not black out the picture")
+    }
 }

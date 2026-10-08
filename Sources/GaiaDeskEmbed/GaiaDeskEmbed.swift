@@ -281,6 +281,11 @@ public final class GaiaDeskEmbed {
             if let drawn { rects.append(drawn) }
             if let model, model != drawn { rects.append(model) }
         }
+        // SwiftUI marks and the app's rects come from layout (where things
+        // END): while the app's window is mid-transition (a navigation push,
+        // a sheet, the keyboard moving content), anything masked may be
+        // drawn elsewhere, so everything is masked until it settles.
+        if !moving, !rects.isEmpty, Host.inTransition(Host.keyWindow(excluding: host.indicatorWindow)) { moving = true }
         if moving { rects.append(Host.everything) }
         return rects
     }
