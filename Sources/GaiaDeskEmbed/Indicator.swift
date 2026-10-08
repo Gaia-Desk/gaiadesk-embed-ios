@@ -63,6 +63,7 @@ final class Indicator: NSObject {
         overlay.frame = root.view.bounds
         overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         overlay.isUserInteractionEnabled = false
+        overlay.accessibilityIdentifier = "gaiadesk.overlay"
         root.view.addSubview(overlay)
         buildPill(in: root.view)
         w.pill = pill
@@ -153,7 +154,36 @@ final class Indicator: NSObject {
         guard UIApplication.shared.applicationState == .active, let scene = w.windowScene, scene.activationState == .foregroundActive else { return false }
         let frame = pill.convert(pill.bounds, to: w)
         guard frame.width >= 40, frame.height >= 20, w.bounds.contains(frame) else { return false }
+        // On the screen itself, not just inside a window that may be moved off it.
+        let onScreen = w.convert(frame, to: w.screen.coordinateSpace)
+        guard w.screen.bounds.contains(onScreen) else { return false }
+        guard !Indicator.coveredInside(pill, in: w) else { return false }
         return Indicator.uncovered(frame, in: w, among: scene.windows)
+    }
+
+    /// Whether any view of the indicator's own window that is not the pill
+    /// (or inside it), drawn after it, overlaps it: something added over the
+    /// pill hides it as surely as another window does.
+    static func coveredInside(_ pill: UIView, in w: UIWindow) -> Bool {
+        let frame = pill.convert(pill.bounds, to: w)
+        var seenPill = false
+        var covered = false
+        func visit(_ v: UIView) {
+            if covered { return }
+            if v === pill {
+                seenPill = true
+                return // the pill's own subviews are the pill
+            }
+            if v.isHidden || v.alpha < 0.01 { return }
+            if seenPill, v.accessibilityIdentifier != "gaiadesk.overlay", v.convert(v.bounds, to: w).intersects(frame) {
+                // An ancestor container of the pill is drawn before it; only
+                // views after the pill in drawing order cover it.
+                if !pill.isDescendant(of: v) { covered = true; return }
+            }
+            for s in v.subviews { visit(s) }
+        }
+        visit(w)
+        return covered
     }
 
     /// No other window above `w` covers `frame` (`w`'s coordinates). Pure

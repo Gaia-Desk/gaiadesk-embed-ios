@@ -95,7 +95,8 @@ public final class GaiaDeskEmbed {
     @MainActor
     public static func start(_ config: Configuration, consentGranted: Bool, onEvent: @escaping (Event) -> Void) throws -> GaiaDeskEmbed {
         var config = config
-        config.maskedRects += MaskRegistry.shared.rects
+        let appRects = config.maskedRects
+        config.maskedRects = appRects + MaskRegistry.shared.rects + Host.scan(excluding: nil).secure
         let json = try configJSON(config, consentGranted: consentGranted)
         let box = EventBox(onEvent)
         let ctx = Unmanaged.passRetained(box).toOpaque()
@@ -118,6 +119,11 @@ public final class GaiaDeskEmbed {
             throw lastError()
         }
         let embed = GaiaDeskEmbed(handle: h, host: host)
+        // The start-time rects stay the app's set: later changes (a SwiftUI
+        // mask moving, a secure field appearing) are added to them, never
+        // replace them.
+        embed.appRects = appRects
+        embed.sentMasks = config.maskedRects
         host.attach(embed)
         current = embed
         return embed
@@ -144,27 +150,57 @@ public final class GaiaDeskEmbed {
     }
 
     /// Mask these rects: in your key window's coordinates, in points.
-    /// Replaces any earlier set (SwiftUI `.gaiaDeskMasked()` views are added).
+    /// Replaces any earlier set of rects or views (SwiftUI `.gaiaDeskMasked()`
+    /// views and secure text fields are always added).
+    /// Any thread (applied on the main thread).
     public func setMaskedRects(_ rects: [CGRect]) throws {
-        try withHandle { h in
-            let all = rects + MaskRegistry.shared.rects
-            let c = all.map { GdRect(x: Double($0.origin.x), y: Double($0.origin.y), w: Double($0.size.width), h: Double($0.size.height)) }
-            let rc = c.withUnsafeBufferPointer { gd_embed_set_mask_rects(h, $0.baseAddress, $0.count) }
-            if rc != 0 { throw GaiaDeskEmbed.lastError() }
+        try GaiaDeskEmbed.onMain {
+            appRects = rects
+            maskedViews = []
+            try refreshMasks()
         }
-        appRects = rects
     }
 
-    /// Mask these views (password fields, card numbers, …). Call again after
-    /// your layout changes.
+    /// Run `f` on the main thread and wait for it.
+    static func onMain<T>(_ f: @MainActor () throws -> T) rethrows -> T {
+        if Thread.isMainThread { return try MainActor.assumeIsolated(f) }
+        return try DispatchQueue.main.sync { try MainActor.assumeIsolated(f) }
+    }
+
+    /// Mask these views (password fields, card numbers, …). They are
+    /// measured again for every frame, so they stay masked as they move.
+    /// Replaces any earlier set of rects or views.
     @MainActor
     public func setMaskedViews(_ views: [UIView]) throws {
-        try setMaskedRects(views.compactMap(GaiaDeskEmbed.rectInWindow))
+        appRects = []
+        maskedViews = views.map { WeakView($0) }
+        try refreshMasks()
     }
 
-    /// Pause (or resume) guided input, as the indicator's own button does.
+    /// Pause (or resume) guided input. A pause your customer chose on the
+    /// indicator is theirs: only they can resume it (`setPaused(false)` is
+    /// ignored until they do).
     public func setPaused(_ paused: Bool) {
-        withHandle { h in _ = gd_embed_set_paused(h, paused ? 1 : 0) }
+        lock.lock()
+        let refused = !paused && customerPaused
+        lock.unlock()
+        if refused { return }
+        sendPaused(paused)
+    }
+
+    /// The indicator's Pause / Allow control button.
+    func customerSetPaused(_ paused: Bool) {
+        lock.lock()
+        customerPaused = paused
+        lock.unlock()
+        sendPaused(paused)
+    }
+
+    private func sendPaused(_ paused: Bool) {
+        withHandle { h in
+            pausedSent = paused
+            _ = gd_embed_set_paused(h, paused ? 1 : 0)
+        }
     }
 
     /// A view's frame in its window's coordinates, in points: the space mask
@@ -177,11 +213,41 @@ public final class GaiaDeskEmbed {
 
     // MARK: - plumbing
 
-    /// The rects the app set (re-sent when SwiftUI masks move).
-    private var appRects: [CGRect] = []
+    /// The rects and views the app set (main thread).
+    var appRects: [CGRect] = []
+    private var maskedViews: [WeakView] = []
+    /// What the library was last told to mask (main thread).
+    private(set) var sentMasks: [CGRect] = []
+    /// The customer paused guided input on the indicator (under `lock`).
+    private var customerPaused = false
+    /// The last pause state sent to the library (under `lock`; tests).
+    private(set) var pausedSent: Bool?
 
+    @MainActor
     func masksChanged() {
-        try? setMaskedRects(appRects)
+        try? refreshMasks()
+    }
+
+    /// Everything masked right now, measured now (main thread): the app's
+    /// rects, its views where they are, marked SwiftUI views, and every
+    /// secure text field on screen.
+    @MainActor
+    func currentMasks() -> [CGRect] {
+        appRects + maskedViews.compactMap { $0.view.flatMap(GaiaDeskEmbed.rectInWindow) } + MaskRegistry.shared.rects + Host.scan(excluding: host.indicatorWindow).secure
+    }
+
+    /// Measure the masks again and tell the library when they moved. Called
+    /// for every captured frame, before it is pushed (main thread).
+    @MainActor
+    func refreshMasks() throws {
+        let masks = currentMasks()
+        guard masks != sentMasks else { return }
+        sentMasks = masks
+        try withHandle { h in
+            let c = masks.map { GdRect(x: Double($0.origin.x), y: Double($0.origin.y), w: Double($0.size.width), h: Double($0.size.height)) }
+            let rc = c.withUnsafeBufferPointer { gd_embed_set_mask_rects(h, $0.baseAddress, $0.count) }
+            if rc != 0 { throw GaiaDeskEmbed.lastError() }
+        }
     }
 
     /// Run `f` with the live handle, under the lock that `stop` takes (so a
@@ -233,6 +299,12 @@ public final class GaiaDeskEmbed {
         default: return nil
         }
     }
+}
+
+/// A masked view, not kept alive by the mask.
+struct WeakView {
+    weak var view: UIView?
+    init(_ v: UIView) { view = v }
 }
 
 /// Holds the app's handler for the C callback's `user_data`.

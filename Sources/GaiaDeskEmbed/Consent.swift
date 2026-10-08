@@ -55,7 +55,7 @@ final class MaskRegistry {
         frames[id] = rect
         lock.unlock()
         if old != rect {
-            DispatchQueue.main.async { GaiaDeskEmbed.current?.masksChanged() }
+            DispatchQueue.main.async { MainActor.assumeIsolated { GaiaDeskEmbed.current?.masksChanged() } }
         }
     }
 }

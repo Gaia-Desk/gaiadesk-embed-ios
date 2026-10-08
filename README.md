@@ -127,13 +127,19 @@ Text(card.number).gaiaDeskMasked()
 Pass the regions you know at start (`rectInWindow(_:)` turns a view into one) or mark SwiftUI views
 `.gaiaDeskMasked()`: an agent can join straight away, and only start-time masks are guaranteed to
 cover the first frame. Later, `setMaskedViews(_:)` / `setMaskedRects(_:)` replace the set (marked
-SwiftUI views are always added). If the app's window cannot be located, the whole picture is
-painted out.
+SwiftUI views are always added). Masked views are measured again for every frame, so they stay
+covered as they move; every secure text field on screen (`isSecureTextEntry`) is masked without
+being asked. If the app's window cannot be located, or the masks cannot be applied, the whole
+picture is painted out or no frame is sent.
+
+No frame is sent while another process's UI is presented over your app (a photo picker, Safari,
+a share sheet, a document picker, mail/message compose, …).
 
 ### Guided mode
 
 Only when your app passes `guided: true` **and** your backend created the session as `cobrowse`;
-your customer can pause it from the indicator (or you call `setPaused(true)`). **On iOS guided mode
+your customer can pause it from the indicator (or you call `setPaused(true)`); a pause your
+customer chose can only be lifted by them (`setPaused(false)` is ignored until they do). **On iOS guided mode
 is partial**, because iOS has no public way to synthesise a touch:
 
 | The agent | What happens in your app |
@@ -142,7 +148,7 @@ is partial**, because iOS has no public way to synthesise a touch:
 | clicks a table/collection cell | it is selected through your delegate |
 | clicks anything else (SwiftUI views, custom gestures, web content) | your customer sees a **"Tap here"** ring at that spot; the agent is told `hint_shown` |
 | scrolls | the `UIScrollView` under the point scrolls |
-| types / presses Enter, Backspace, arrows, Home, End, Escape | delivered to the first responder |
+| types / presses Enter, Backspace, arrows, Home, End, Escape | delivered to the first responder (refused, `masked`, for a password field or anything masked) |
 | moves the pointer / highlights | a pointer dot / ring is drawn over your app |
 
 A click on the indicator, or on a masked region, or while your app is not active is refused. The

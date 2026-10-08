@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		139EC07B3D71444BC80BDAC4 /* HelpDeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */; };
 		2DC493A8BDD18186A45F7BFE /* GaiaDeskEmbedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B242FF2F9B869D0F757F2BA4 /* GaiaDeskEmbedTests.swift */; };
+		2EB9943FDD30B2ADB12EFAFF /* SecurityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32F675E5CDF45385DAEA5A69 /* SecurityTests.swift */; };
 		2FE0FC4376C515573BFDE4E7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D974FBB4D7E321BABD48D26C /* AppDelegate.swift */; };
 		66CEA99053962D0C317BAB3E /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 59C1B860A55D3680C165E427 /* GaiaDeskEmbed */; };
 		8C9DD0C9BC036DFFE2580C7D /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 62B0CE0D2528E43E2485E8DA /* GaiaDeskEmbed */; };
@@ -28,6 +29,7 @@
 
 /* Begin PBXFileReference section */
 		2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HelpDeskUIKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32F675E5CDF45385DAEA5A69 /* SecurityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityTests.swift; sourceTree = "<group>"; };
 		A3220F82A154C952C4205798 /* GaiaDeskEmbedTestHost.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GaiaDeskEmbedTestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A796A070810505E1395E7039 /* GaiaDeskEmbedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GaiaDeskEmbedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpDeskApp.swift; sourceTree = "<group>"; };
@@ -86,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				B242FF2F9B869D0F757F2BA4 /* GaiaDeskEmbedTests.swift */,
+				32F675E5CDF45385DAEA5A69 /* SecurityTests.swift */,
 			);
 			path = GaiaDeskEmbedTests;
 			sourceTree = "<group>";
@@ -310,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DC493A8BDD18186A45F7BFE /* GaiaDeskEmbedTests.swift in Sources */,
+				2EB9943FDD30B2ADB12EFAFF /* SecurityTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

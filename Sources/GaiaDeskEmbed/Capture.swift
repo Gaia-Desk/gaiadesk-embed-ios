@@ -61,6 +61,9 @@ final class SnapshotCapture: Capture {
 
     private func tick() {
         guard let host, UIApplication.shared.applicationState == .active, let scene = Indicator.scene() else { return }
+        // The masks measured now, for this very picture; nothing while
+        // another process's UI is presented.
+        guard MainActor.assumeIsolated({ host.prepareFrame() }) else { return }
         let windows = scene.windows.filter { !($0 is IndicatorWindow) && !$0.isHidden && $0.alpha > 0.01 }.sorted { $0.windowLevel < $1.windowLevel }
         guard let screen = windows.first?.screen ?? Optional(scene.screen) else { return }
         let picture = screen.bounds
@@ -91,7 +94,6 @@ final class SnapshotCapture: Capture {
 final class ReplayKitCapture: Capture {
     private weak var host: Host?
     private let ci = CIContext(options: [.cacheIntermediates: false])
-    private let picture = Locked(CGRect.zero)
     private let interval = Locked(1.0 / 15)
     private var last: CFTimeInterval = 0
     private var buffer: CVPixelBuffer?
@@ -102,7 +104,6 @@ final class ReplayKitCapture: Capture {
     func start(fps: Int, done: @escaping (Bool) -> Void) {
         let rec = RPScreenRecorder.shared()
         interval.set(1.0 / Double(max(1, min(30, fps))))
-        picture.set(Indicator.scene()?.screen.bounds ?? UIScreen.main.bounds)
         guard rec.isAvailable else { return done(false) }
         rec.isMicrophoneEnabled = false
         running = true
@@ -112,16 +113,11 @@ final class ReplayKitCapture: Capture {
         }, completionHandler: { error in
             DispatchQueue.main.async { done(error == nil) }
         })
-        // Rotation changes the picture's shape.
-        NotificationCenter.default.addObserver(forName: UIDevice.orientationDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
-            self?.picture.set(Indicator.scene()?.screen.bounds ?? UIScreen.main.bounds)
-        }
     }
 
     func stop() {
         guard running else { return }
         running = false
-        NotificationCenter.default.removeObserver(self)
         RPScreenRecorder.shared().stopCapture { _ in }
     }
 
@@ -130,11 +126,20 @@ final class ReplayKitCapture: Capture {
         let now = CACurrentMediaTime()
         guard now - last >= interval.get * 0.9, let px = CMSampleBufferGetImageBuffer(sample), let host else { return }
         last = now
-        var img = CIImage(cvPixelBuffer: px)
-        if let o = CMGetAttachment(sample, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil) as? NSNumber,
-           let orientation = CGImagePropertyOrientation(rawValue: o.uint32Value) {
-            img = img.oriented(orientation)
+        // On the main thread, for this frame: the masks measured now, whether
+        // a frame may go at all, and the app's interface orientation and
+        // screen size.
+        let main = DispatchQueue.main.sync { () -> (Bool, UIInterfaceOrientation, CGSize) in
+            let scene = Indicator.scene()
+            return (MainActor.assumeIsolated { host.prepareFrame() }, scene?.interfaceOrientation ?? .portrait, scene?.screen.bounds.size ?? UIScreen.main.bounds.size)
         }
+        guard main.0 else { return }
+        let attached = (CMGetAttachment(sample, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil) as? NSNumber).flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) }
+        let buffer0 = CGSize(width: CVPixelBufferGetWidth(px), height: CVPixelBufferGetHeight(px))
+        var img = CIImage(cvPixelBuffer: px).oriented(Self.orientation(attached: attached, buffer: buffer0, interface: main.1))
+        // The picture is the screen in the app's interface orientation, the
+        // shape of this oriented frame (mask rects are in its points).
+        let picture = Self.picture(frame: img.extent.size, screen: main.2)
         img = img.transformed(by: CGAffineTransform(translationX: -img.extent.origin.x, y: -img.extent.origin.y))
         let (w, h) = FrameSize.fit(img.extent.size)
         img = img.transformed(by: CGAffineTransform(scaleX: CGFloat(w) / img.extent.width, y: CGFloat(h) / img.extent.height))
@@ -147,6 +152,34 @@ final class ReplayKitCapture: Capture {
         CVPixelBufferLockBaseAddress(out, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(out, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(out) else { return }
-        _ = host.push(UnsafeRawPointer(base), width: w, height: h, stride: CVPixelBufferGetBytesPerRow(out), picture: picture.get)
+        _ = host.push(UnsafeRawPointer(base), width: w, height: h, stride: CVPixelBufferGetBytesPerRow(out), picture: picture)
+    }
+
+    /// How to turn ReplayKit's buffer upright for the app's interface. The
+    /// attachment (the device's orientation) is used when it agrees with the
+    /// interface's shape; when it does not (an app locked to portrait on a
+    /// rotated device, or no attachment) the interface orientation decides,
+    /// so the picture always matches the app's window coordinates. Pure.
+    static func orientation(attached: CGImagePropertyOrientation?, buffer: CGSize, interface: UIInterfaceOrientation) -> CGImagePropertyOrientation {
+        let wantLandscape = interface.isLandscape
+        if let a = attached {
+            let swaps = [.left, .right, .leftMirrored, .rightMirrored].contains(a)
+            let landscape = swaps ? buffer.height > buffer.width : buffer.width > buffer.height
+            if landscape == wantLandscape { return a }
+        }
+        let bufferLandscape = buffer.width > buffer.height
+        switch interface {
+        case .landscapeRight: return bufferLandscape ? .up : .left
+        case .landscapeLeft: return bufferLandscape ? .down : .right
+        case .portraitUpsideDown: return bufferLandscape ? .left : .down
+        default: return bufferLandscape ? .right : .up
+        }
+    }
+
+    /// The picture rect for an upright frame of `frame` pixels: the screen
+    /// (points) in the same shape. Pure.
+    static func picture(frame: CGSize, screen: CGSize) -> CGRect {
+        let long = max(screen.width, screen.height), short = min(screen.width, screen.height)
+        return frame.width > frame.height ? CGRect(x: 0, y: 0, width: long, height: short) : CGRect(x: 0, y: 0, width: short, height: long)
     }
 }

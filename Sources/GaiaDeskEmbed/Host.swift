@@ -59,7 +59,7 @@ final class Host {
             guard indicator == nil else { return }
             let ind = Indicator(title: title, guided: guided)
             ind.onStop = { [weak self] in self?.embed?.withHandle { h in _ = gd_embed_customer_stop(h) } }
-            ind.onPause = { [weak self] paused in self?.embed?.setPaused(paused) }
+            ind.onPause = { [weak self] paused in self?.embed?.customerSetPaused(paused) }
             indicator = ind
             ind.show()
             startWatching()
@@ -115,7 +115,7 @@ final class Host {
 
     func deliver(_ json: String, token: UInt64) {
         DispatchQueue.main.async { [self] in
-            let reason = Guided.deliver(json, indicator: indicator)
+            let reason = MainActor.assumeIsolated { Guided.deliver(json, indicator: indicator, masks: embed?.currentMasks() ?? []) }
             if token != 0 {
                 embed?.withHandle { h in _ = gd_embed_action_result(h, token, reason) }
             }
@@ -136,6 +136,26 @@ final class Host {
     }
 
     // MARK: frames
+
+    /// The indicator's window (main thread), never captured or masked.
+    var indicatorWindow: UIWindow? { indicator?.window }
+
+    /// Before each frame (main thread): the masks measured again and pushed
+    /// to the library, and whether a frame may be sent at all (not while
+    /// another process's UI — a photo picker, Safari, a share sheet — is
+    /// presented over the app).
+    @MainActor
+    func prepareFrame() -> Bool {
+        guard let embed else { return false }
+        let scan = Host.scan(excluding: indicator?.window)
+        if scan.outOfProcess { return false }
+        do {
+            try embed.refreshMasks()
+        } catch {
+            return false // masks fail closed: no frame the library could not mask
+        }
+        return true
+    }
 
     /// One BGRA picture for the library; false: stop capturing.
     func push(_ base: UnsafeRawPointer, width: Int, height: Int, stride: Int, picture: CGRect) -> Bool {
@@ -161,6 +181,52 @@ final class Host {
     private func observe() {
         visible.set(indicator?.isVisible() ?? false)
         appFrame.set(Host.keyWindow(excluding: indicator?.window).map { $0.convert($0.bounds, to: $0.screen.coordinateSpace) })
+    }
+
+    /// What a frame must respect, found by walking the app's windows (main
+    /// thread): every secure text field's rect (window coordinates, masked
+    /// automatically) and whether out-of-process UI is presented.
+    @MainActor
+    static func scan(excluding: UIWindow?) -> (secure: [CGRect], outOfProcess: Bool) {
+        guard let scene = Indicator.scene() else { return ([], false) }
+        var secure: [CGRect] = []
+        var remote = false
+        for w in scene.windows where w !== excluding && !(w is IndicatorWindow) && !w.isHidden {
+            if isSystemInputWindow(w) { continue }
+            var vc = w.rootViewController
+            while let v = vc {
+                if isOutOfProcess(v) { remote = true }
+                vc = v.presentedViewController
+            }
+            walk(w) { v in
+                if v.isHidden || v.alpha < 0.01 { return false }
+                if let t = v as? UITextField, t.isSecureTextEntry { secure.append(v.convert(v.bounds, to: nil)) }
+                else if let t = v as? UITextView, t.isSecureTextEntry { secure.append(v.convert(v.bounds, to: nil)) }
+                if NSStringFromClass(type(of: v)) == "_UIRemoteView" { remote = true }
+                return true
+            }
+        }
+        return (secure, remote)
+    }
+
+    /// View controllers whose content another process draws.
+    static let outOfProcessClasses = ["PHPickerViewController", "SFSafariViewController", "UIActivityViewController", "UIDocumentPickerViewController",
+                                      "UIImagePickerController", "MFMailComposeViewController", "MFMessageComposeViewController", "CNContactPickerViewController",
+                                      "QLPreviewController", "UICloudSharingController", "EKEventEditViewController", "PKAddPassesViewController"]
+
+    static func isOutOfProcess(_ vc: UIViewController) -> Bool {
+        outOfProcessClasses.contains { name in NSClassFromString(name).map { vc.isKind(of: $0) } ?? false }
+    }
+
+    /// The keyboard's and text effects' windows (system input, not the app's content).
+    static func isSystemInputWindow(_ w: UIWindow) -> Bool {
+        let n = NSStringFromClass(type(of: w))
+        return n.contains("Keyboard") || n.contains("TextEffects")
+    }
+
+    private static func walk(_ v: UIView, _ visit: (UIView) -> Bool) {
+        guard visit(v) else { return }
+        for s in v.subviews { walk(s, visit) }
     }
 
     /// The app's key window (never the indicator's).

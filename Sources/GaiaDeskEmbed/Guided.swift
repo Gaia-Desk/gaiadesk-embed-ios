@@ -22,8 +22,10 @@
 import UIKit
 
 enum Guided {
-    /// Deliver one request; nil when applied, else why not.
-    static func deliver(_ json: String, indicator: Indicator?) -> String? {
+    /// Deliver one request; nil when applied, else why not. `masks`: what is
+    /// masked now (window points).
+    @MainActor
+    static func deliver(_ json: String, indicator: Indicator?, masks: [CGRect]) -> String? {
         guard let d = json.data(using: .utf8), let o = try? JSONSerialization.jsonObject(with: d) as? [String: Any], let t = o["t"] as? String else { return "unsupported" }
         guard UIApplication.shared.applicationState == .active, let window = Host.keyWindow(excluding: indicator?.window) else { return "not_focused" }
         let point = CGPoint(x: o["x"] as? Double ?? 0, y: o["y"] as? Double ?? 0)
@@ -44,14 +46,28 @@ enum Guided {
             if indicator?.onPill(point) == true { return "embed_ui" }
             return scroll(at: p, in: window, dx: o["dx"] as? Double ?? 0, dy: o["dy"] as? Double ?? 0) ? nil : "nothing_there"
         case "type":
+            if let r = firstResponder(), let why = refusesTyping(r, masks: masks) { return why }
             guard let text = o["text"] as? String, let input = firstResponder() as? UIKeyInput else { return "not_editable" }
             input.insertText(text)
             return nil
         case "key":
+            if let r = firstResponder(), let why = refusesTyping(r, masks: masks) { return why }
             return key(o["key"] as? String ?? "")
         default:
             return "unsupported"
         }
+    }
+
+    /// Typing into a password field, or into anything masked, is refused
+    /// (`masked`): the agent cannot see it, so it cannot be theirs to edit.
+    @MainActor
+    static func refusesTyping(_ r: UIResponder, masks: [CGRect]) -> String? {
+        if let t = r as? UITextInputTraits, t.isSecureTextEntry == true { return "masked" }
+        if let v = r as? UIView, v.window != nil {
+            let rect = v.convert(v.bounds, to: nil)
+            if masks.contains(where: { $0.intersects(rect) }) { return "masked" }
+        }
+        return nil
     }
 
     /// The control or cell under `p`, activated through its public API.

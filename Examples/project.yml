@@ -75,6 +75,7 @@ targets:
       properties:
         CFBundleDisplayName: GaiaDeskEmbed Tests
         UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.embed.testhost
