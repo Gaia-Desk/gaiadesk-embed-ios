@@ -1,0 +1,82 @@
+GaiaDesk Native Binary Licence
+
+Copyright (c) GaiaDesk. All rights reserved.
+
+This licence covers the compiled GaiaDesk native library files distributed in
+the packages `@gaiadesk/sdk-native` and `@gaiadesk/sdk-native-<platform>` (npm)
+and `gaiadesk-native` (PyPI), including every `.node`, `.so`, `.pyd` and
+`.dylib` file they contain, and the compiled `gaiadesk-cli` command-line
+program, however it is distributed: in the `gaiadesk-cli-<version>-<platform>`
+archives on GaiaDesk's releases, in the npm packages `@gaiadesk/cli` and
+`@gaiadesk/cli-<platform>`, through GaiaDesk's install scripts and Homebrew
+tap, or beside the GaiaDesk app, and the compiled GaiaDesk embed library
+(`libgaiadesk_embed`): the `GaiaDeskEmbedFFI` XCFramework, the
+`gaiadesk_embed` `.dll`, `.so` and `.dylib` files, and the `.node` files of
+the npm packages `@gaiadesk/embed-native-<platform>`, however they are
+distributed, including inside the `GaiaDesk.Embed` NuGet package, and its
+mobile builds: the iOS `GaiaDeskEmbedFFI` XCFramework (and its
+`libgaiadesk_embed.a` static libraries) of the `GaiaDeskEmbed` iOS Swift
+package and CocoaPod, and the Android `libgaiadesk_embed.so` files of the
+`net.gaiadesk:embed-android` AAR, however they are distributed, including
+inside the `@gaiadesk/embed-react-native` and `gaiadesk_embed` (Flutter)
+packages' builds (together, the "Binary"). It does not cover the open-source
+GaiaDesk SDKs, wrappers, tools, scripts and documentation (`@gaiadesk/sdk`,
+`@gaiadesk/mcp`, `gaiadesk`, `@gaiadesk/embed`, the TypeScript of
+`@gaiadesk/embed-native`, the `GaiaDeskEmbed` Swift packages' (macOS and iOS)
+and `GaiaDesk.Embed`'s sources, the Kotlin sources of
+`net.gaiadesk:embed-android`, `@gaiadesk/embed-react-native` and the
+`gaiadesk_embed` Flutter plugin, the gaiadesk-cli repository's install scripts
+and docs), which carry their own MIT licence.
+
+1. Grant. You may install, copy and run the Binary, free of charge, solely to
+   use GaiaDesk services and software: in your own programs, scripts, agents
+   and products, including commercial ones, that connect to GaiaDesk.
+
+2. Redistribution. You may redistribute the Binary only unmodified, inside the
+   package it was published in (or as a dependency your own software installs
+   from the official registries), with this licence included. The embed
+   library may also be redistributed inside your own application — linked
+   into it statically or dynamically, or shipped beside it — unmodified, with
+   this licence included in your application's notices; linking it into your
+   application does not by itself modify the Binary or create a derivative
+   work of it for section 3(b). Your application's users may install and run
+   the embed library as part of your application, under your own terms for
+   your application, provided those terms grant them no right in the Binary
+   that this licence does not grant you, and do not permit them to separate
+   the Binary from your application and use or redistribute it on its own.
+   You are responsible for your users' use of the Binary through your
+   application.
+
+3. Restrictions. You may not:
+   (a) reverse engineer, decompile or disassemble the Binary, or otherwise try
+       to derive its source code, algorithms or protocols, except to the
+       extent applicable law expressly permits this despite this restriction;
+   (b) modify the Binary, or create derivative works of it;
+   (c) use the Binary, or anything learned from it, to build a product or
+       service that competes with GaiaDesk, or to access GaiaDesk services in
+       a way GaiaDesk's terms of service do not allow;
+   (d) remove or alter any copyright notice or this licence;
+   (e) sell, rent or sublicense the Binary on its own.
+
+4. Ownership. The Binary is licensed, not sold. GaiaDesk keeps all rights,
+   title and interest in it, including all intellectual property rights. All
+   rights not expressly granted here are reserved.
+
+5. Third-party components. The Binary contains open-source components under
+   their own permissive licences (MIT, BSD, ISC, Apache-2.0); their notices
+   are in THIRD_PARTY_NOTICES.md where it is shipped and at
+   https://gaiadesk.net/legal. Nothing here limits your rights under those
+   licences for those components.
+
+6. Termination. This licence ends automatically if you break any of its
+   terms. You must then stop using and delete every copy of the Binary.
+
+7. No warranty. THE BINARY IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE AND NON-INFRINGEMENT.
+
+8. Limitation of liability. TO THE EXTENT PERMITTED BY LAW, GAIADESK IS NOT
+   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM OR IN
+   CONNECTION WITH THE BINARY OR ITS USE.
+
+Questions: legal@gaiadesk.net

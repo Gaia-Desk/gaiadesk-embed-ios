@@ -1,0 +1,452 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		139EC07B3D71444BC80BDAC4 /* HelpDeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */; };
+		2FE0FC4376C515573BFDE4E7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D974FBB4D7E321BABD48D26C /* AppDelegate.swift */; };
+		66CEA99053962D0C317BAB3E /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 59C1B860A55D3680C165E427 /* GaiaDeskEmbed */; };
+		8C9DD0C9BC036DFFE2580C7D /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 62B0CE0D2528E43E2485E8DA /* GaiaDeskEmbed */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HelpDeskUIKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpDeskApp.swift; sourceTree = "<group>"; };
+		B5DA385050AD2378375DA1F4 /* HelpDeskSwiftUI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HelpDeskSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3DA351967AE3E0263CE620E /* gaiadesk-embed-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "gaiadesk-embed-ios"; path = ..; sourceTree = SOURCE_ROOT; };
+		D974FBB4D7E321BABD48D26C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C7F6412F25EB4CFD54887A26 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				66CEA99053962D0C317BAB3E /* GaiaDeskEmbed in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D720ED0583B868DC4CB71DE8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8C9DD0C9BC036DFFE2580C7D /* GaiaDeskEmbed in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		12D845730D84A18ECD4092DA /* HelpDeskSwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				727356ECFF1CAF168792B14D /* Sources */,
+			);
+			path = HelpDeskSwiftUI;
+			sourceTree = "<group>";
+		};
+		727356ECFF1CAF168792B14D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		9060845CF5CB2E14504DC55D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5DA385050AD2378375DA1F4 /* HelpDeskSwiftUI.app */,
+				2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B89A1862385486D9C2880718 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D974FBB4D7E321BABD48D26C /* AppDelegate.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		DDEEFABC78E8BFEC9E59EA17 /* HelpDeskUIKit */ = {
+			isa = PBXGroup;
+			children = (
+				B89A1862385486D9C2880718 /* Sources */,
+			);
+			path = HelpDeskUIKit;
+			sourceTree = "<group>";
+		};
+		EE16ADF5C1B7E559D2D950FD /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				D3DA351967AE3E0263CE620E /* gaiadesk-embed-ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		F0BFCEBE2539CFBC958B26AD = {
+			isa = PBXGroup;
+			children = (
+				12D845730D84A18ECD4092DA /* HelpDeskSwiftUI */,
+				DDEEFABC78E8BFEC9E59EA17 /* HelpDeskUIKit */,
+				EE16ADF5C1B7E559D2D950FD /* Packages */,
+				9060845CF5CB2E14504DC55D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AC2B8F8743919D45B5A4E181 /* HelpDeskSwiftUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7B5AC96916752B17CEF9B26B /* Build configuration list for PBXNativeTarget "HelpDeskSwiftUI" */;
+			buildPhases = (
+				436E970411D809D523AD5560 /* Sources */,
+				C7F6412F25EB4CFD54887A26 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HelpDeskSwiftUI;
+			packageProductDependencies = (
+				59C1B860A55D3680C165E427 /* GaiaDeskEmbed */,
+			);
+			productName = HelpDeskSwiftUI;
+			productReference = B5DA385050AD2378375DA1F4 /* HelpDeskSwiftUI.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C6492F18372F3CC5A2508BE7 /* HelpDeskUIKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE71FB53A65A70AAAD2B59FD /* Build configuration list for PBXNativeTarget "HelpDeskUIKit" */;
+			buildPhases = (
+				BB1F795A62BD527097AEDA6C /* Sources */,
+				D720ED0583B868DC4CB71DE8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HelpDeskUIKit;
+			packageProductDependencies = (
+				62B0CE0D2528E43E2485E8DA /* GaiaDeskEmbed */,
+			);
+			productName = HelpDeskUIKit;
+			productReference = 2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E4D227DE08DBE64FA85B5AC1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					AC2B8F8743919D45B5A4E181 = {
+						DevelopmentTeam = "";
+					};
+					C6492F18372F3CC5A2508BE7 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 69032AFED1057A58029B3B14 /* Build configuration list for PBXProject "HelpDeskExamples" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F0BFCEBE2539CFBC958B26AD;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				03BED66AE830EFC95CE4C093 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 9060845CF5CB2E14504DC55D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C6492F18372F3CC5A2508BE7 /* HelpDeskUIKit */,
+				AC2B8F8743919D45B5A4E181 /* HelpDeskSwiftUI */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		436E970411D809D523AD5560 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				139EC07B3D71444BC80BDAC4 /* HelpDeskApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB1F795A62BD527097AEDA6C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FE0FC4376C515573BFDE4E7 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2014D31F1A6A4E64758AE460 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HelpDeskUIKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.examples.helpdesk.uikit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		30EF7E527845DD7FC857A4C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		83268B478A6B43FA06D9A245 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A45C06AC152E9DA69EC741DF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HelpDeskSwiftUI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.examples.helpdesk.swiftui;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E44DADAD970E1570AB55DE4E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HelpDeskUIKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.examples.helpdesk.uikit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E74198CE307676052839F6CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HelpDeskSwiftUI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.examples.helpdesk.swiftui;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		69032AFED1057A58029B3B14 /* Build configuration list for PBXProject "HelpDeskExamples" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83268B478A6B43FA06D9A245 /* Debug */,
+				30EF7E527845DD7FC857A4C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7B5AC96916752B17CEF9B26B /* Build configuration list for PBXNativeTarget "HelpDeskSwiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E74198CE307676052839F6CB /* Debug */,
+				A45C06AC152E9DA69EC741DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE71FB53A65A70AAAD2B59FD /* Build configuration list for PBXNativeTarget "HelpDeskUIKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E44DADAD970E1570AB55DE4E /* Debug */,
+				2014D31F1A6A4E64758AE460 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		03BED66AE830EFC95CE4C093 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		59C1B860A55D3680C165E427 /* GaiaDeskEmbed */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GaiaDeskEmbed;
+		};
+		62B0CE0D2528E43E2485E8DA /* GaiaDeskEmbed */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GaiaDeskEmbed;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E4D227DE08DBE64FA85B5AC1 /* Project object */;
+}

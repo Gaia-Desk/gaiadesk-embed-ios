@@ -1,0 +1,61 @@
+# The two example apps, as one Xcode project (generated with XcodeGen:
+# `cd Examples && xcodegen`; the generated HelpDeskExamples.xcodeproj is
+# committed, so XcodeGen is only needed to change it). Both depend on this
+# package by path; to use the local XCFramework, set
+# GAIADESK_EMBED_LOCAL_BINARY=1 in the environment Xcode is started from (or
+# for xcodebuild).
+name: HelpDeskExamples
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+packages:
+  GaiaDeskEmbed:
+    path: ..
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGNING_ALLOWED: "NO"
+    DEVELOPMENT_TEAM: ""
+    GENERATE_INFOPLIST_FILE: "YES"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  HelpDeskUIKit:
+    type: application
+    platform: iOS
+    sources: [HelpDeskUIKit/Sources]
+    dependencies:
+      - package: GaiaDeskEmbed
+    info:
+      path: HelpDeskUIKit/Info.plist
+      properties:
+        CFBundleDisplayName: Acme Bank (UIKit)
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: [helpdeskuikit]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.examples.helpdesk.uikit
+        GENERATE_INFOPLIST_FILE: "NO"
+  HelpDeskSwiftUI:
+    type: application
+    platform: iOS
+    sources: [HelpDeskSwiftUI/Sources]
+    dependencies:
+      - package: GaiaDeskEmbed
+    info:
+      path: HelpDeskSwiftUI/Info.plist
+      properties:
+        CFBundleDisplayName: Acme Bank (SwiftUI)
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: [helpdeskswiftui]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.examples.helpdesk.swiftui
+        GENERATE_INFOPLIST_FILE: "NO"

@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+# The prebuilt library: fetched (scripts/fetch-binary.sh) or built, never committed.
+Frameworks/GaiaDeskEmbedFFI.xcframework/
