@@ -59,3 +59,44 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.examples.helpdesk.swiftui
         GENERATE_INFOPLIST_FILE: "NO"
+  # The package's XCTest suite hosted in an app (UIKit delivers control actions
+  # and first responder only in a real app's window scene):
+  #   xcodebuild test -project Examples/HelpDeskExamples.xcodeproj -scheme GaiaDeskEmbedTests \
+  #     -destination 'platform=iOS Simulator,name=iPhone 17'
+  # (`xcodebuild test -scheme GaiaDeskEmbed` at the root runs it hostless: the
+  # UIKit-delivery tests skip there.)
+  GaiaDeskEmbedTestHost:
+    type: application
+    platform: iOS
+    sources:
+      - path: GaiaDeskEmbedTestHost/Sources
+    info:
+      path: GaiaDeskEmbedTestHost/Info.plist
+      properties:
+        CFBundleDisplayName: GaiaDeskEmbed Tests
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.embed.testhost
+        GENERATE_INFOPLIST_FILE: "NO"
+  GaiaDeskEmbedTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ../Tests/GaiaDeskEmbedTests
+    dependencies:
+      - target: GaiaDeskEmbedTestHost
+      - package: GaiaDeskEmbed
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.gaiadesk.embed.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/GaiaDeskEmbedTestHost.app/GaiaDeskEmbedTestHost"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  GaiaDeskEmbedTests:
+    build:
+      targets:
+        GaiaDeskEmbedTestHost: all
+        GaiaDeskEmbedTests: [test]
+    test:
+      targets: [GaiaDeskEmbedTests]

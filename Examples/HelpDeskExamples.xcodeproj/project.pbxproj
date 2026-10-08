@@ -8,17 +8,34 @@
 
 /* Begin PBXBuildFile section */
 		139EC07B3D71444BC80BDAC4 /* HelpDeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */; };
+		2DC493A8BDD18186A45F7BFE /* GaiaDeskEmbedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B242FF2F9B869D0F757F2BA4 /* GaiaDeskEmbedTests.swift */; };
 		2FE0FC4376C515573BFDE4E7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D974FBB4D7E321BABD48D26C /* AppDelegate.swift */; };
 		66CEA99053962D0C317BAB3E /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 59C1B860A55D3680C165E427 /* GaiaDeskEmbed */; };
 		8C9DD0C9BC036DFFE2580C7D /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 62B0CE0D2528E43E2485E8DA /* GaiaDeskEmbed */; };
+		BEE7BAF474471BAE3485F2E8 /* HostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC87A783F7E9A457BB5D4EA1 /* HostApp.swift */; };
+		C6E3AAACDAC7DBCA71BD068C /* GaiaDeskEmbed in Frameworks */ = {isa = PBXBuildFile; productRef = 3CEB95EFBE8EB3421B02B7F0 /* GaiaDeskEmbed */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CD371A8D3155E81ABB082773 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E4D227DE08DBE64FA85B5AC1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4BC17C6ACDB95719781918AF;
+			remoteInfo = GaiaDeskEmbedTestHost;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HelpDeskUIKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3220F82A154C952C4205798 /* GaiaDeskEmbedTestHost.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GaiaDeskEmbedTestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A796A070810505E1395E7039 /* GaiaDeskEmbedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GaiaDeskEmbedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1A2CF7E1727FD43F475AF59 /* HelpDeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpDeskApp.swift; sourceTree = "<group>"; };
+		B242FF2F9B869D0F757F2BA4 /* GaiaDeskEmbedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaiaDeskEmbedTests.swift; sourceTree = "<group>"; };
 		B5DA385050AD2378375DA1F4 /* HelpDeskSwiftUI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HelpDeskSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3DA351967AE3E0263CE620E /* gaiadesk-embed-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "gaiadesk-embed-ios"; path = ..; sourceTree = SOURCE_ROOT; };
 		D974FBB4D7E321BABD48D26C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EC87A783F7E9A457BB5D4EA1 /* HostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,6 +55,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DBF4EFF007F9F4C8DCFFBEE2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C6E3AAACDAC7DBCA71BD068C /* GaiaDeskEmbed in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -47,6 +72,22 @@
 				727356ECFF1CAF168792B14D /* Sources */,
 			);
 			path = HelpDeskSwiftUI;
+			sourceTree = "<group>";
+		};
+		43B0A927E9C07070C054B425 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				5D5E952087F6BE52C3ADFB01 /* GaiaDeskEmbedTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		5D5E952087F6BE52C3ADFB01 /* GaiaDeskEmbedTests */ = {
+			isa = PBXGroup;
+			children = (
+				B242FF2F9B869D0F757F2BA4 /* GaiaDeskEmbedTests.swift */,
+			);
+			path = GaiaDeskEmbedTests;
 			sourceTree = "<group>";
 		};
 		727356ECFF1CAF168792B14D /* Sources */ = {
@@ -60,10 +101,29 @@
 		9060845CF5CB2E14504DC55D /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				A3220F82A154C952C4205798 /* GaiaDeskEmbedTestHost.app */,
+				A796A070810505E1395E7039 /* GaiaDeskEmbedTests.xctest */,
 				B5DA385050AD2378375DA1F4 /* HelpDeskSwiftUI.app */,
 				2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9490837052CEB70E6DC783A0 /* gaiadesk-embed-ios */ = {
+			isa = PBXGroup;
+			children = (
+				43B0A927E9C07070C054B425 /* Tests */,
+			);
+			name = "gaiadesk-embed-ios";
+			path = ..;
+			sourceTree = "<group>";
+		};
+		A9171D9C0AE4468918AAB23F /* GaiaDeskEmbedTestHost */ = {
+			isa = PBXGroup;
+			children = (
+				FAFE2D0A0015F258FA67A8AC /* Sources */,
+			);
+			path = GaiaDeskEmbedTestHost;
 			sourceTree = "<group>";
 		};
 		B89A1862385486D9C2880718 /* Sources */ = {
@@ -93,6 +153,8 @@
 		F0BFCEBE2539CFBC958B26AD = {
 			isa = PBXGroup;
 			children = (
+				9490837052CEB70E6DC783A0 /* gaiadesk-embed-ios */,
+				A9171D9C0AE4468918AAB23F /* GaiaDeskEmbedTestHost */,
 				12D845730D84A18ECD4092DA /* HelpDeskSwiftUI */,
 				DDEEFABC78E8BFEC9E59EA17 /* HelpDeskUIKit */,
 				EE16ADF5C1B7E559D2D950FD /* Packages */,
@@ -100,9 +162,34 @@
 			);
 			sourceTree = "<group>";
 		};
+		FAFE2D0A0015F258FA67A8AC /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				EC87A783F7E9A457BB5D4EA1 /* HostApp.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4BC17C6ACDB95719781918AF /* GaiaDeskEmbedTestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D24BAA546DF36811F0BB0EC /* Build configuration list for PBXNativeTarget "GaiaDeskEmbedTestHost" */;
+			buildPhases = (
+				9C00CA40EC480483926A50EE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GaiaDeskEmbedTestHost;
+			packageProductDependencies = (
+			);
+			productName = GaiaDeskEmbedTestHost;
+			productReference = A3220F82A154C952C4205798 /* GaiaDeskEmbedTestHost.app */;
+			productType = "com.apple.product-type.application";
+		};
 		AC2B8F8743919D45B5A4E181 /* HelpDeskSwiftUI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7B5AC96916752B17CEF9B26B /* Build configuration list for PBXNativeTarget "HelpDeskSwiftUI" */;
@@ -141,6 +228,26 @@
 			productReference = 2E8BAAA76474434B2803210A /* HelpDeskUIKit.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F927DFE017DFD144CA1FE4DD /* GaiaDeskEmbedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D0ACB70D7ED8D6C039F15BB /* Build configuration list for PBXNativeTarget "GaiaDeskEmbedTests" */;
+			buildPhases = (
+				85D4098076B51903A2CFEC1E /* Sources */,
+				DBF4EFF007F9F4C8DCFFBEE2 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				82F391F8CDD63A2E24863BDF /* PBXTargetDependency */,
+			);
+			name = GaiaDeskEmbedTests;
+			packageProductDependencies = (
+				3CEB95EFBE8EB3421B02B7F0 /* GaiaDeskEmbed */,
+			);
+			productName = GaiaDeskEmbedTests;
+			productReference = A796A070810505E1395E7039 /* GaiaDeskEmbedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -150,10 +257,16 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					4BC17C6ACDB95719781918AF = {
+						DevelopmentTeam = "";
+					};
 					AC2B8F8743919D45B5A4E181 = {
 						DevelopmentTeam = "";
 					};
 					C6492F18372F3CC5A2508BE7 = {
+						DevelopmentTeam = "";
+					};
+					F927DFE017DFD144CA1FE4DD = {
 						DevelopmentTeam = "";
 					};
 				};
@@ -177,6 +290,8 @@
 			targets = (
 				C6492F18372F3CC5A2508BE7 /* HelpDeskUIKit */,
 				AC2B8F8743919D45B5A4E181 /* HelpDeskSwiftUI */,
+				4BC17C6ACDB95719781918AF /* GaiaDeskEmbedTestHost */,
+				F927DFE017DFD144CA1FE4DD /* GaiaDeskEmbedTests */,
 			);
 		};
 /* End PBXProject section */
@@ -190,6 +305,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		85D4098076B51903A2CFEC1E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DC493A8BDD18186A45F7BFE /* GaiaDeskEmbedTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C00CA40EC480483926A50EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BEE7BAF474471BAE3485F2E8 /* HostApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BB1F795A62BD527097AEDA6C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -200,7 +331,32 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		82F391F8CDD63A2E24863BDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4BC17C6ACDB95719781918AF /* GaiaDeskEmbedTestHost */;
+			targetProxy = CD371A8D3155E81ABB082773 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		00F40E14DB09AA2E5697AF1B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GaiaDeskEmbedTestHost/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.embed.testhost;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		2014D31F1A6A4E64758AE460 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -278,6 +434,39 @@
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
+		};
+		353A016A8E6D150E5E9AB3B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GaiaDeskEmbedTestHost/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.embed.testhost;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		401A1D868AB7DF9650EF78DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.embed.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GaiaDeskEmbedTestHost.app/GaiaDeskEmbedTestHost";
+			};
+			name = Debug;
 		};
 		83268B478A6B43FA06D9A245 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -364,6 +553,22 @@
 			};
 			name = Release;
 		};
+		A7C8F67939E4555F958F8F2F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.gaiadesk.embed.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GaiaDeskEmbedTestHost.app/GaiaDeskEmbedTestHost";
+			};
+			name = Release;
+		};
 		E44DADAD970E1570AB55DE4E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -410,11 +615,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		6D24BAA546DF36811F0BB0EC /* Build configuration list for PBXNativeTarget "GaiaDeskEmbedTestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				353A016A8E6D150E5E9AB3B6 /* Debug */,
+				00F40E14DB09AA2E5697AF1B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		7B5AC96916752B17CEF9B26B /* Build configuration list for PBXNativeTarget "HelpDeskSwiftUI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E74198CE307676052839F6CB /* Debug */,
 				A45C06AC152E9DA69EC741DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8D0ACB70D7ED8D6C039F15BB /* Build configuration list for PBXNativeTarget "GaiaDeskEmbedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				401A1D868AB7DF9650EF78DD /* Debug */,
+				A7C8F67939E4555F958F8F2F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -438,6 +661,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3CEB95EFBE8EB3421B02B7F0 /* GaiaDeskEmbed */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GaiaDeskEmbed;
+		};
 		59C1B860A55D3680C165E427 /* GaiaDeskEmbed */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GaiaDeskEmbed;

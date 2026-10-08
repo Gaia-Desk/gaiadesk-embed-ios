@@ -51,6 +51,21 @@ final class GaiaDeskEmbedTests: XCTestCase {
 
     // MARK: guided delivery through public UIKit API
 
+    /// A window in the host app's scene. UIKit delivers control actions and
+    /// first responder only there: the package's own hostless test run
+    /// (`xcodebuild test -scheme GaiaDeskEmbed`) has no app, so these tests
+    /// skip there and run in the hosted target (the Examples project's
+    /// `GaiaDeskEmbedTests` scheme) and in `scripts/build-sim.sh --test`.
+    @MainActor
+    func hostWindow() throws -> UIWindow {
+        guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else {
+            throw XCTSkip("needs a host app (the Examples project's GaiaDeskEmbedTests scheme)")
+        }
+        let w = UIWindow(windowScene: scene)
+        w.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        return w
+    }
+
     final class Target: NSObject {
         var taps = 0
         @objc func tap() { taps += 1 }
@@ -58,7 +73,7 @@ final class GaiaDeskEmbedTests: XCTestCase {
 
     @MainActor
     func testAClickPressesAUIKitButtonAndAScrollMovesAScrollView() throws {
-        let w = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let w = try hostWindow()
         let root = UIViewController()
         w.rootViewController = root
         w.isHidden = false
@@ -85,7 +100,7 @@ final class GaiaDeskEmbedTests: XCTestCase {
 
     @MainActor
     func testTypingGoesToTheFirstResponder() throws {
-        let w = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let w = try hostWindow()
         let root = UIViewController()
         w.rootViewController = root
         w.makeKeyAndVisible()

@@ -140,6 +140,19 @@ apps, "Acme Bank" in **UIKit** (`HelpDeskUIKit`) and in **SwiftUI** (`HelpDeskSw
 masked card, a Buy button and Get help. Their test hooks (environment variables, `helpdesk*://stop`
 URLs) drive the GaiaDesk end-to-end test in the Simulator.
 
+## Tests
+
+```sh
+export GAIADESK_EMBED_LOCAL_BINARY=1   # with Frameworks/GaiaDeskEmbedFFI.xcframework in place
+xcodebuild test -project Examples/HelpDeskExamples.xcodeproj -scheme GaiaDeskEmbedTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17'      # hosted in an app: every test runs
+xcodebuild test -scheme GaiaDeskEmbed -destination 'platform=iOS Simulator,name=iPhone 17'
+                                       # hostless: the two UIKit-delivery tests skip
+```
+
+Without Xcode's iOS platform installed, `scripts/build-sim.sh --test` builds and runs the same suite
+with swiftc.
+
 ## Licence
 
 The Swift sources here are MIT (`LICENSE`). The prebuilt `libgaiadesk_embed` binary is licensed

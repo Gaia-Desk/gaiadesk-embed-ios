@@ -6,7 +6,7 @@
 # downloaded (~8 GB): "iOS 26.5 is not installed". The SDK ships with Xcode,
 # so swiftc can still build simulator apps, and an older simulator runtime
 # (iOS 18.x) runs them (deployment target 15.0). With the platform installed,
-# prefer Xcode / `xcodebuild test -scheme GaiaDeskEmbed`.
+# prefer `xcodebuild test` (README, Tests).
 #
 #   scripts/build-sim.sh                     # build/sim/HelpDeskUIKit.app, HelpDeskSwiftUI.app
 #   scripts/build-sim.sh --test [<udid>]     # + build/sim/GaiaDeskEmbedTests.app, run it on <udid>
