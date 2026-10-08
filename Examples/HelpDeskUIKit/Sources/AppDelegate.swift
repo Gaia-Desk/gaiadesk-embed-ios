@@ -141,13 +141,16 @@ final class DeskViewController: UIViewController {
     @objc func getHelp() {
         Task { @MainActor in
             let guided = env["GAIADESK_DEMO_GUIDED"] == "1"
-            let agreed = env["GAIADESK_DEMO_TEST_CONSENT"] == "1" ? true : await GaiaDeskEmbed.requestConsent(company: "Acme", guided: guided)
-            guard agreed else { return }
+            // Tests only: the dialog answered "Share" without showing it.
+            let consent = env["GAIADESK_DEMO_TEST_CONSENT"] == "1"
+                ? try? GaiaDeskEmbed.recordConsent(company: "Acme", guided: guided)
+                : await GaiaDeskEmbed.requestConsent(company: "Acme", guided: guided)
+            guard let consent else { return }
             let method: GaiaDeskEmbed.CaptureMethod = env["GAIADESK_DEMO_CAPTURE"] == "snapshot" ? .snapshot : .replayKit
             let server = env["GAIADESK_SERVER"].flatMap(URL.init(string:))
             let masked = [GaiaDeskEmbed.rectInWindow(card)].compactMap { $0 }
             do {
-                help = try GaiaDeskEmbed.start(.init(embedToken: token.text ?? "", company: "Acme", server: server, guided: guided, maskedRects: masked, captureMethod: method), consentGranted: agreed) { [weak self] e in
+                help = try GaiaDeskEmbed.start(.init(embedToken: token.text ?? "", company: "Acme", server: server, guided: guided, maskedRects: masked, captureMethod: method), consent: consent) { [weak self] e in
                     self?.on(e)
                 }
             } catch let e as GaiaDeskEmbedError {

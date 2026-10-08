@@ -144,25 +144,46 @@ final class Host {
     /// to the library, and whether a frame may be sent at all (not while
     /// another process's UI — a photo picker, Safari, a share sheet — is
     /// presented over the app).
+    /// Returns the masks for this frame (window points, measured now), or
+    /// nil: no frame.
     @MainActor
-    func prepareFrame() -> Bool {
-        guard let embed else { return false }
+    func prepareFrame() -> [CGRect]? {
+        guard let embed else { return nil }
         let scan = Host.scan(excluding: indicator?.window)
-        if scan.outOfProcess { return false }
+        held(scan.outOfProcess)
+        if scan.outOfProcess { return nil }
         do {
+            // The session's list too: the library refuses clicks on masks.
             try embed.refreshMasks()
         } catch {
-            return false // masks fail closed: no frame the library could not mask
+            return nil // masks fail closed: no frame the library could not mask
         }
-        return true
+        return embed.sentMasks
     }
 
-    /// One BGRA picture for the library; false: stop capturing.
-    func push(_ base: UnsafeRawPointer, width: Int, height: Int, stride: Int, picture: CGRect) -> Bool {
+    /// Main thread: whether frames are held for out-of-process UI.
+    private var pictureHeld = false
+
+    /// Tell the agent when the picture stops and starts again.
+    @MainActor
+    private func held(_ now: Bool) {
+        guard now != pictureHeld else { return }
+        pictureHeld = now
+        embed?.withHandle { h in _ = gd_embed_notice(h, now ? "picture_paused" : "picture_resumed") }
+    }
+
+    /// One BGRA picture for the library, with the masks measured for it
+    /// (painted on this frame whatever the session's list says); false: stop
+    /// capturing.
+    func push(_ base: UnsafeRawPointer, width: Int, height: Int, stride: Int, picture: CGRect, masks: [CGRect]) -> Bool {
         var going = false
         embed?.withHandle { h in
             let pic = GdRect(x: Double(picture.origin.x), y: Double(picture.origin.y), w: Double(picture.width), h: Double(picture.height))
-            going = gd_embed_push_frame(h, base.assumingMemoryBound(to: UInt8.self), UInt32(width), UInt32(height), stride, pic) != 1
+            let rects = masks.map { GdRect(x: Double($0.origin.x), y: Double($0.origin.y), w: Double($0.width), h: Double($0.height)) }
+            let rc = rects.withUnsafeBufferPointer {
+                gd_embed_push_frame_masked(h, base.assumingMemoryBound(to: UInt8.self), UInt32(width), UInt32(height), stride, pic, $0.baseAddress, $0.count)
+            }
+            going = rc != 1
         }
         return going
     }

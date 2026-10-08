@@ -94,16 +94,18 @@ public final class GaiaDeskEmbed {
     private var handle: OpaquePointer?
     private let host: Host
 
-    /// Start sharing. `consentGranted` must be your user's answer to a
-    /// consent dialog (`requestConsent`, or your own): the library refuses
-    /// without it. `onEvent` is called on the main queue. Call on the main
-    /// thread.
+    /// Start sharing. `consent` is your user's YES to a consent dialog:
+    /// `requestConsent` (the SDK's), or `recordConsent` after your own. It is
+    /// single-use, expires after 10 minutes, and must match the session: the
+    /// same company, and guided only if the user was asked about guiding. The
+    /// library refuses otherwise. `onEvent` is called on the main queue. Call
+    /// on the main thread.
     @MainActor
-    public static func start(_ config: Configuration, consentGranted: Bool, onEvent: @escaping (Event) -> Void) throws -> GaiaDeskEmbed {
+    public static func start(_ config: Configuration, consent: Consent, onEvent: @escaping (Event) -> Void) throws -> GaiaDeskEmbed {
         var config = config
         let appRects = config.maskedRects
         config.maskedRects = appRects + MaskRegistry.shared.rects + Host.scan(excluding: nil).secure
-        let json = try configJSON(config, consentGranted: consentGranted)
+        let json = try configJSON(config, consent: consent)
         let box = EventBox(onEvent)
         let ctx = Unmanaged.passRetained(box).toOpaque()
         let cb = GdEmbedCallbacks(on_event: { userData, eventJSON in
@@ -194,18 +196,22 @@ public final class GaiaDeskEmbed {
         sendPaused(paused)
     }
 
-    /// The indicator's Pause / Allow control button.
+    /// The indicator's Pause / Allow control button: the customer's own
+    /// pause, which only they can lift (the library holds it too).
     func customerSetPaused(_ paused: Bool) {
         lock.lock()
         customerPaused = paused
         lock.unlock()
-        sendPaused(paused)
+        withHandle { h in
+            pausedSent = paused
+            _ = gd_embed_customer_pause(h, paused ? 1 : 0)
+        }
     }
 
     private func sendPaused(_ paused: Bool) {
         withHandle { h in
-            pausedSent = paused
-            _ = gd_embed_set_paused(h, paused ? 1 : 0)
+            // -2: the library refused to lift the customer's pause.
+            if gd_embed_set_paused(h, paused ? 1 : 0) == 0 { pausedSent = paused }
         }
     }
 
@@ -264,15 +270,16 @@ public final class GaiaDeskEmbed {
         if let h = handle { try f(h) }
     }
 
-    static func configJSON(_ c: Configuration, consentGranted: Bool) throws -> String {
+    static func configJSON(_ c: Configuration, consent: Consent?) throws -> String {
         var o: [String: Any] = [
             "embed_token": c.embedToken,
-            "consent_granted": consentGranted,
+            "consent_granted": consent != nil,
             "company": c.company,
             "capture": "app",
             "guided": c.guided,
             "fps": c.fps,
         ]
+        if let consent { o["consent_token"] = consent.token }
         if let s = c.server { o["server"] = s.absoluteString }
         if !c.maskedRects.isEmpty {
             o["masks"] = c.maskedRects.map { ["x": Double($0.origin.x), "y": Double($0.origin.y), "w": Double($0.width), "h": Double($0.height)] }

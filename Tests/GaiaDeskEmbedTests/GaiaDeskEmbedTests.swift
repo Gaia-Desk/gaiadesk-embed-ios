@@ -8,9 +8,10 @@ final class GaiaDeskEmbedTests: XCTestCase {
 
     func testConfigJSONSaysConsentAndAppCapture() throws {
         let c = GaiaDeskEmbed.Configuration(embedToken: token, company: "Acme", server: URL(string: "http://127.0.0.1:9000"), guided: true, maskedRects: [CGRect(x: 1, y: 2, width: 3, height: 4)])
-        let json = try GaiaDeskEmbed.configJSON(c, consentGranted: true)
+        let json = try GaiaDeskEmbed.configJSON(c, consent: GaiaDeskEmbed.consent(token: "gdc_x", company: "Acme", guided: true))
         let o = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any])
         XCTAssertEqual(o["consent_granted"] as? Bool, true)
+        XCTAssertEqual(o["consent_token"] as? String, "gdc_x")
         XCTAssertEqual(o["capture"] as? String, "app", "an iOS app shares only itself")
         XCTAssertEqual(o["guided"] as? Bool, true)
         XCTAssertEqual((o["masks"] as? [[String: Double]])?.first?["w"], 3)
@@ -39,10 +40,11 @@ final class GaiaDeskEmbedTests: XCTestCase {
     /// The real library: refusals happen before anything is shown or sent.
     @MainActor
     func testTheLibraryRefusesWithoutConsent() {
-        XCTAssertThrowsError(try GaiaDeskEmbed.start(.init(embedToken: token, company: "Acme"), consentGranted: false) { _ in }) { e in
+        // A token the library never issued is no consent.
+        XCTAssertThrowsError(try GaiaDeskEmbed.start(.init(embedToken: token, company: "Acme"), consent: GaiaDeskEmbed.consent(token: "gdc_forged", company: "Acme", guided: false)) { _ in }) { e in
             XCTAssertEqual((e as? GaiaDeskEmbedError)?.code, "consent_required")
         }
-        XCTAssertThrowsError(try GaiaDeskEmbed.start(.init(embedToken: "gdk_live_secret", company: "Acme"), consentGranted: true) { _ in }) { e in
+        XCTAssertThrowsError(try GaiaDeskEmbed.start(.init(embedToken: "gdk_live_secret", company: "Acme"), consent: try GaiaDeskEmbed.recordConsent(company: "Acme", guided: false)) { _ in }) { e in
             XCTAssertEqual((e as? GaiaDeskEmbedError)?.code, "bad_token")
         }
         XCTAssertTrue(GaiaDeskEmbed.buildInfo.contains("\"os\":\"ios\""), GaiaDeskEmbed.buildInfo)

@@ -1,6 +1,7 @@
 // The default consent dialog (iOS has no library-drawn one: this is it), and
 // SwiftUI's way to mark views as masked.
 
+import GaiaDeskEmbedFFI
 import SwiftUI
 import UIKit
 
@@ -15,18 +16,47 @@ extension GaiaDeskEmbed {
         return (title, message)
     }
 
+    /// Your user's YES to sharing this app with `company` (and, if `guided`,
+    /// to being guided), as the library recorded it: what `start` takes.
+    /// Opaque, single-use, valid for 10 minutes; a session must match it.
+    public struct Consent: Sendable, Equatable {
+        /// The library's single-use token (wrappers carry it across their
+        /// bridge). Opaque; never persist it: it expires in 10 minutes and
+        /// works once.
+        public let token: String
+        public let company: String
+        public let guided: Bool
+    }
+
     /// Ask the user (a UIAlertController on `presenter`, default: the top
-    /// view controller of the key window). Pass the answer to `start`.
+    /// view controller of the key window). Their YES, for `start`; nil when
+    /// they declined (or nothing could be shown).
     @MainActor
-    public static func requestConsent(company: String, guided: Bool = false, from presenter: UIViewController? = nil) async -> Bool {
+    public static func requestConsent(company: String, guided: Bool = false, from presenter: UIViewController? = nil) async -> Consent? {
         let (title, message) = consentText(company: company, guided: guided)
-        guard let vc = presenter ?? topViewController() else { return false }
-        return await withCheckedContinuation { cont in
+        guard let vc = presenter ?? topViewController() else { return nil }
+        let agreed = await withCheckedContinuation { cont in
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Don't Share", style: .cancel) { _ in cont.resume(returning: false) })
             alert.addAction(UIAlertAction(title: "Share", style: .default) { _ in cont.resume(returning: true) })
             vc.present(alert, animated: true)
         }
+        return agreed ? try? recordConsent(company: company, guided: guided) : nil
+    }
+
+    /// Your own consent dialog said YES: call this right then, with what
+    /// the dialog asked (the company named, and whether it said the agent
+    /// may guide). Never call it without asking.
+    public static func recordConsent(company: String, guided: Bool) throws -> Consent {
+        guard let t = gd_embed_record_consent(company, "app", guided ? 1 : 0) else { throw lastError() }
+        return Consent(token: String(cString: t), company: company, guided: guided)
+    }
+
+    /// For wrappers (React Native, Flutter) that carry a consent across
+    /// their bridge: the token `recordConsent` / `requestConsent` gave. The
+    /// library checks it (issued here, unused, unexpired, matching).
+    public static func consent(token: String, company: String, guided: Bool) -> Consent {
+        Consent(token: token, company: company, guided: guided)
     }
 
     @MainActor

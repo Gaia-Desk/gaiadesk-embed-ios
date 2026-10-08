@@ -63,7 +63,7 @@ final class SnapshotCapture: Capture {
         guard let host, UIApplication.shared.applicationState == .active, let scene = Indicator.scene() else { return }
         // The masks measured now, for this very picture; nothing while
         // another process's UI is presented.
-        guard MainActor.assumeIsolated({ host.prepareFrame() }) else { return }
+        guard let masks = MainActor.assumeIsolated({ host.prepareFrame() }) else { return }
         let windows = scene.windows.filter { !($0 is IndicatorWindow) && !$0.isHidden && $0.alpha > 0.01 }.sorted { $0.windowLevel < $1.windowLevel }
         guard let screen = windows.first?.screen ?? Optional(scene.screen) else { return }
         let picture = screen.bounds
@@ -86,7 +86,7 @@ final class SnapshotCapture: Capture {
         }
         UIGraphicsPopContext()
         ctx.restoreGState()
-        _ = host.push(UnsafeRawPointer(data), width: w, height: h, stride: ctx.bytesPerRow, picture: picture)
+        _ = host.push(UnsafeRawPointer(data), width: w, height: h, stride: ctx.bytesPerRow, picture: picture, masks: masks)
     }
 }
 
@@ -129,11 +129,11 @@ final class ReplayKitCapture: Capture {
         // On the main thread, for this frame: the masks measured now, whether
         // a frame may go at all, and the app's interface orientation and
         // screen size.
-        let main = DispatchQueue.main.sync { () -> (Bool, UIInterfaceOrientation, CGSize) in
+        let main = DispatchQueue.main.sync { () -> ([CGRect]?, UIInterfaceOrientation, CGSize) in
             let scene = Indicator.scene()
             return (MainActor.assumeIsolated { host.prepareFrame() }, scene?.interfaceOrientation ?? .portrait, scene?.screen.bounds.size ?? UIScreen.main.bounds.size)
         }
-        guard main.0 else { return }
+        guard let masks = main.0 else { return }
         let attached = (CMGetAttachment(sample, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil) as? NSNumber).flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) }
         let buffer0 = CGSize(width: CVPixelBufferGetWidth(px), height: CVPixelBufferGetHeight(px))
         var img = CIImage(cvPixelBuffer: px).oriented(Self.orientation(attached: attached, buffer: buffer0, interface: main.1))
@@ -152,7 +152,7 @@ final class ReplayKitCapture: Capture {
         CVPixelBufferLockBaseAddress(out, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(out, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(out) else { return }
-        _ = host.push(UnsafeRawPointer(base), width: w, height: h, stride: CVPixelBufferGetBytesPerRow(out), picture: picture)
+        _ = host.push(UnsafeRawPointer(base), width: w, height: h, stride: CVPixelBufferGetBytesPerRow(out), picture: picture, masks: masks)
     }
 
     /// How to turn ReplayKit's buffer upright for the app's interface. The

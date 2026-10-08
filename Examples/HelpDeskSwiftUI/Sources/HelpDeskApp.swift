@@ -46,11 +46,14 @@ final class HelpModel: ObservableObject {
 
     func getHelp() async {
         let guided = env["GAIADESK_DEMO_GUIDED"] == "1"
-        let agreed = env["GAIADESK_DEMO_TEST_CONSENT"] == "1" ? true : await GaiaDeskEmbed.requestConsent(company: "Acme", guided: guided)
-        guard agreed else { return }
+        // Tests only: the dialog answered "Share" without showing it.
+        let consent = env["GAIADESK_DEMO_TEST_CONSENT"] == "1"
+            ? try? GaiaDeskEmbed.recordConsent(company: "Acme", guided: guided)
+            : await GaiaDeskEmbed.requestConsent(company: "Acme", guided: guided)
+        guard let consent else { return }
         let method: GaiaDeskEmbed.CaptureMethod = env["GAIADESK_DEMO_CAPTURE"] == "snapshot" ? .snapshot : .replayKit
         do {
-            help = try GaiaDeskEmbed.start(.init(embedToken: token, company: "Acme", server: env["GAIADESK_SERVER"].flatMap(URL.init(string:)), guided: guided, captureMethod: method), consentGranted: agreed) { [weak self] e in
+            help = try GaiaDeskEmbed.start(.init(embedToken: token, company: "Acme", server: env["GAIADESK_SERVER"].flatMap(URL.init(string:)), guided: guided, captureMethod: method), consent: consent) { [weak self] e in
                 self?.on(e)
             }
         } catch let e as GaiaDeskEmbedError {

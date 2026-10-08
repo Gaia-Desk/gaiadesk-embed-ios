@@ -7,7 +7,10 @@ if you allow it, guide them through it.
 - Swift Package (and CocoaPod) wrapping `libgaiadesk_embed`, a prebuilt static XCFramework
   (device arm64; simulator arm64 + x86_64). iOS 15+.
 - **Consent first**: the library refuses to start until your user has agreed. Use
-  `requestConsent` (an alert with the right wording) or your own dialog.
+  `requestConsent` (an alert with the right wording), or your own dialog followed by
+  `recordConsent(company:guided:)` when the user says yes. Either gives a `Consent`: single-use,
+  valid for 10 minutes, and bound to what the user was asked (the company, and guided only if
+  the dialog said the agent may guide); `start` takes nothing else.
 - **Only your app, always.** ReplayKit's in-app capture (iOS itself limits it to your app, asks the
   user once and shows its own recording indication) or a snapshot of your app's own windows. Other
   apps, the Home Screen and system UI are never captured; sharing pauses when your app leaves the
@@ -84,11 +87,11 @@ curl -s -X POST https://api.gaiadesk.net/v1/support/sessions \
 import GaiaDeskEmbed
 
 @MainActor func getHelp(token: String) async {
-    guard await GaiaDeskEmbed.requestConsent(company: "Acme") else { return }
+    guard let consent = await GaiaDeskEmbed.requestConsent(company: "Acme") else { return }
     do {
         help = try GaiaDeskEmbed.start(
             .init(embedToken: token, company: "Acme", maskedRects: [GaiaDeskEmbed.rectInWindow(cardView)].compactMap { $0 }),
-            consentGranted: true
+            consent: consent
         ) { event in
             switch event {
             case let .code(code, _, _): print("support code", code)   // read it to the agent

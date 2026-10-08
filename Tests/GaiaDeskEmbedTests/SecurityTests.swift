@@ -33,13 +33,14 @@ final class SecurityTests: XCTestCase {
     /// A session against a server that is not there: the handle is live, no
     /// agent ever joins. Retries while the previous test's session winds down.
     @MainActor
-    func session(masks: [CGRect] = []) throws -> GaiaDeskEmbed {
+    func session(masks: [CGRect] = [], consent: GaiaDeskEmbed.Consent? = nil) throws -> GaiaDeskEmbed {
         let cfg = GaiaDeskEmbed.Configuration(embedToken: token, company: "Acme", server: URL(string: "http://127.0.0.1:9"), guided: true, maskedRects: masks, captureMethod: .snapshot)
         let end = Date().addingTimeInterval(5)
         while true {
             do {
-                return try GaiaDeskEmbed.start(cfg, consentGranted: true) { _ in }
-            } catch let e as GaiaDeskEmbedError where e.code == "busy" && Date() < end {
+                // A busy refusal uses the consent up: a fresh one per try.
+                return try GaiaDeskEmbed.start(cfg, consent: consent ?? GaiaDeskEmbed.recordConsent(company: "Acme", guided: true)) { _ in }
+            } catch let e as GaiaDeskEmbedError where e.code == "busy" && consent == nil && Date() < end {
                 RunLoop.main.run(until: Date().addingTimeInterval(0.1))
             }
         }
@@ -131,12 +132,33 @@ final class SecurityTests: XCTestCase {
         let embed = try session()
         defer { embed.stop() }
         host.attach(embed)
-        XCTAssertFalse(host.prepareFrame(), "no frame while it is up")
+        XCTAssertNil(host.prepareFrame(), "no frame while it is up")
         root.dismiss(animated: false)
         let gone = Date().addingTimeInterval(3)
         while root.presentedViewController != nil && Date() < gone { RunLoop.main.run(until: Date().addingTimeInterval(0.05)) }
         XCTAssertFalse(Host.scan(excluding: nil).outOfProcess)
-        XCTAssertTrue(host.prepareFrame())
+        XCTAssertNotNil(host.prepareFrame())
+    }
+
+    // #9: start takes only a consent the library recorded, once, for this
+    // company, and guided only if the user was asked about guiding.
+    @MainActor
+    func testConsentIsBoundToWhatTheUserWasAsked() throws {
+        let cfg = GaiaDeskEmbed.Configuration(embedToken: token, company: "Acme", server: URL(string: "http://127.0.0.1:9"), guided: true, captureMethod: .snapshot)
+        func refused(_ c: GaiaDeskEmbed.Consent, _ config: GaiaDeskEmbed.Configuration = cfg, file: StaticString = #filePath, line: UInt = #line) {
+            XCTAssertThrowsError(try GaiaDeskEmbed.start(config, consent: c) { _ in }, file: file, line: line) { e in
+                XCTAssertEqual((e as? GaiaDeskEmbedError)?.code, "consent_required", "\(e)", file: file, line: line)
+            }
+        }
+        refused(GaiaDeskEmbed.consent(token: "gdc_" + String(repeating: "0", count: 32), company: "Acme", guided: true))
+        refused(try GaiaDeskEmbed.recordConsent(company: "Other Co", guided: true))
+        refused(try GaiaDeskEmbed.recordConsent(company: "Acme", guided: false)) // asked view-only, starting guided
+        let yes = try GaiaDeskEmbed.recordConsent(company: "Acme", guided: true)
+        RunLoop.main.run(until: Date().addingTimeInterval(1.5)) // the previous test's session winds down (busy would use `yes` up)
+        let embed = try session(consent: yes)
+        embed.stop()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+        refused(yes) // single use
     }
 
     // #5: the picture comes from each oriented frame; a portrait-locked app on
