@@ -33,8 +33,9 @@ jobs:
       - name: Build the examples for the simulator
         run: |
           for t in HelpDeskUIKit HelpDeskSwiftUI; do
-            xcodebuild build -project Examples/HelpDeskExamples.xcodeproj -target "$t" \
-              -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+            # -scheme, not -target: a target build does not build the package the app links
+            xcodebuild build -project Examples/HelpDeskExamples.xcodeproj -scheme "$t" \
+              -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
           done
 
   cocoapods:
