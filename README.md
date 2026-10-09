@@ -1,8 +1,14 @@
 # GaiaDeskEmbed (iOS)
 
-A **"Get help" button for your iPhone and iPad app**. Your customer taps it and agrees; **your app's
-screen** is shared with **your** support team, who see it in the GaiaDesk console's Support page and,
-if you allow it, guide them through it.
+[![CI](https://github.com/Gaia-Desk/gaiadesk-embed-ios/actions/workflows/ci.yml/badge.svg)](https://github.com/Gaia-Desk/gaiadesk-embed-ios/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Gaia-Desk/gaiadesk-embed-ios)](https://github.com/Gaia-Desk/gaiadesk-embed-ios/releases/latest)
+[![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen)](#swift-package-manager)
+[![License: MIT + binary licence](https://img.shields.io/badge/license-MIT%20%2B%20binary%20licence-blue)](#licence)
+
+A **"Get help" button for your iPhone and iPad app**: in-app remote support and a screen sharing
+SDK for iOS (Swift, UIKit and SwiftUI), for customer support with optional guided control. Your
+customer taps it and agrees; **your app's screen** is shared with **your** support team, who see it
+in the GaiaDesk console's Support page and, if you allow it, guide them through it.
 
 - Swift Package (and CocoaPod) wrapping `libgaiadesk_embed`, a prebuilt static XCFramework
   (device arm64; simulator arm64 + x86_64). iOS 15+.
@@ -47,19 +53,25 @@ GitHub release and checks it against the checksum in `Package.swift`; nothing el
 
 ### CocoaPods
 
+The pod is not on CocoaPods trunk yet. Until it is, point your Podfile at the podspec of the
+release tag:
+
 ```ruby
 # Podfile
 platform :ios, '15.0'
 
 target 'YourApp' do
-  pod 'GaiaDeskEmbed', '~> 0.1'
+  pod 'GaiaDeskEmbed', :podspec => 'https://raw.githubusercontent.com/Gaia-Desk/gaiadesk-embed-ios/v0.1.0/GaiaDeskEmbed.podspec'
 end
 ```
 
-then `pod install`. The pod's source is the release's `GaiaDeskEmbed-<version>.zip` (the Swift
+Once published to CocoaPods trunk, `pod 'GaiaDeskEmbed', '~> 0.1'` is enough.
+
+Then `pod install`. (Use `:podspec`, not `:git`: the XCFramework is not in git, so a `:git`
+checkout has no binary.) The pod's source is the release's `GaiaDeskEmbed-<version>.zip` (the Swift
 sources and the same XCFramework), verified by its SHA-256 in the podspec. Works with and without
 `use_frameworks!`. React Native (`@gaiadesk/embed-react-native`) and Flutter (`gaiadesk_embed`)
-pull this pod for you.
+depend on this pod; until it is on trunk, add the same `:podspec` line to their app's Podfile.
 
 ### A local copy of the library
 
@@ -202,6 +214,14 @@ scripts/release.sh 0.1.0 <gaiadesk checkout>/embed/out/ios/GaiaDeskEmbedFFI.xcfr
 
 `scripts/set-binary.sh <version> <checksum>` alone repoints `Package.swift` (and the podspec's
 version) at an already-published release.
+
+## Links
+
+- Swift Package Manager: `https://github.com/Gaia-Desk/gaiadesk-embed-ios.git` (from `0.1.0`); binaries on the [latest release](https://github.com/Gaia-Desk/gaiadesk-embed-ios/releases/latest)
+- CocoaPods: [`GaiaDeskEmbed.podspec`](GaiaDeskEmbed.podspec) (CocoaPods trunk once published)
+- Guide: [Embedding GaiaDesk](https://gaiadesk.net/docs/embedding-gaiadesk) on gaiadesk.net
+- Embed SDKs: [Web](https://github.com/Gaia-Desk/gaiadesk-embed) · [Electron](https://github.com/Gaia-Desk/gaiadesk-embed-electron) · [macOS (Swift)](https://github.com/Gaia-Desk/gaiadesk-embed-swift) · [C/C++ and Qt](https://github.com/Gaia-Desk/gaiadesk-embed-cpp) · [.NET](https://github.com/Gaia-Desk/gaiadesk-embed-dotnet) · [iOS](https://github.com/Gaia-Desk/gaiadesk-embed-ios) · [Android](https://github.com/Gaia-Desk/gaiadesk-embed-android) · [React Native](https://github.com/Gaia-Desk/gaiadesk-embed-react-native) · [Flutter](https://github.com/Gaia-Desk/gaiadesk-embed-flutter)
+- [Changelog](CHANGELOG.md) · [Security policy](https://github.com/Gaia-Desk/.github/blob/main/SECURITY.md)
 
 ## Licence
 
